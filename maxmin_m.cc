@@ -1,5 +1,5 @@
 //
-// Generated file, do not edit! Created by opp_msgtool 6.0 from minmax.msg.
+// Generated file, do not edit! Created by opp_msgtool 6.0 from maxmin.msg.
 //
 
 // Disable warnings about unused variables, empty switch stmts, etc:
@@ -28,7 +28,7 @@
 #include <sstream>
 #include <memory>
 #include <type_traits>
-#include "minmax_m.h"
+#include "maxmin_m.h"
 
 namespace omnetpp {
 
@@ -150,22 +150,22 @@ void doParsimUnpacking(omnetpp::cCommBuffer *, T& t)
 
 }  // namespace omnetpp
 
-Register_Class(MinMaxMsg)
+Register_Class(MaxMinMsg)
 
-MinMaxMsg::MinMaxMsg(const char *name, short kind) : ::omnetpp::cMessage(name, kind)
+MaxMinMsg::MaxMinMsg(const char *name, short kind) : ::omnetpp::cMessage(name, kind)
 {
 }
 
-MinMaxMsg::MinMaxMsg(const MinMaxMsg& other) : ::omnetpp::cMessage(other)
+MaxMinMsg::MaxMinMsg(const MaxMinMsg& other) : ::omnetpp::cMessage(other)
 {
     copy(other);
 }
 
-MinMaxMsg::~MinMaxMsg()
+MaxMinMsg::~MaxMinMsg()
 {
 }
 
-MinMaxMsg& MinMaxMsg::operator=(const MinMaxMsg& other)
+MaxMinMsg& MaxMinMsg::operator=(const MaxMinMsg& other)
 {
     if (this == &other) return *this;
     ::omnetpp::cMessage::operator=(other);
@@ -173,73 +173,60 @@ MinMaxMsg& MinMaxMsg::operator=(const MinMaxMsg& other)
     return *this;
 }
 
-void MinMaxMsg::copy(const MinMaxMsg& other)
+void MaxMinMsg::copy(const MaxMinMsg& other)
 {
     this->msgId = other.msgId;
     this->source = other.source;
     this->destination = other.destination;
-    this->hopCount = other.hopCount;
 }
 
-void MinMaxMsg::parsimPack(omnetpp::cCommBuffer *b) const
+void MaxMinMsg::parsimPack(omnetpp::cCommBuffer *b) const
 {
     ::omnetpp::cMessage::parsimPack(b);
     doParsimPacking(b,this->msgId);
     doParsimPacking(b,this->source);
     doParsimPacking(b,this->destination);
-    doParsimPacking(b,this->hopCount);
 }
 
-void MinMaxMsg::parsimUnpack(omnetpp::cCommBuffer *b)
+void MaxMinMsg::parsimUnpack(omnetpp::cCommBuffer *b)
 {
     ::omnetpp::cMessage::parsimUnpack(b);
     doParsimUnpacking(b,this->msgId);
     doParsimUnpacking(b,this->source);
     doParsimUnpacking(b,this->destination);
-    doParsimUnpacking(b,this->hopCount);
 }
 
-int MinMaxMsg::getMsgId() const
+int MaxMinMsg::getMsgId() const
 {
     return this->msgId;
 }
 
-void MinMaxMsg::setMsgId(int msgId)
+void MaxMinMsg::setMsgId(int msgId)
 {
     this->msgId = msgId;
 }
 
-int MinMaxMsg::getSource() const
+int MaxMinMsg::getSource() const
 {
     return this->source;
 }
 
-void MinMaxMsg::setSource(int source)
+void MaxMinMsg::setSource(int source)
 {
     this->source = source;
 }
 
-int MinMaxMsg::getDestination() const
+int MaxMinMsg::getDestination() const
 {
     return this->destination;
 }
 
-void MinMaxMsg::setDestination(int destination)
+void MaxMinMsg::setDestination(int destination)
 {
     this->destination = destination;
 }
 
-int MinMaxMsg::getHopCount() const
-{
-    return this->hopCount;
-}
-
-void MinMaxMsg::setHopCount(int hopCount)
-{
-    this->hopCount = hopCount;
-}
-
-class MinMaxMsgDescriptor : public omnetpp::cClassDescriptor
+class MaxMinMsgDescriptor : public omnetpp::cClassDescriptor
 {
   private:
     mutable const char **propertyNames;
@@ -247,11 +234,10 @@ class MinMaxMsgDescriptor : public omnetpp::cClassDescriptor
         FIELD_msgId,
         FIELD_source,
         FIELD_destination,
-        FIELD_hopCount,
     };
   public:
-    MinMaxMsgDescriptor();
-    virtual ~MinMaxMsgDescriptor();
+    MaxMinMsgDescriptor();
+    virtual ~MaxMinMsgDescriptor();
 
     virtual bool doesSupport(omnetpp::cObject *obj) const override;
     virtual const char **getPropertyNames() const override;
@@ -277,24 +263,24 @@ class MinMaxMsgDescriptor : public omnetpp::cClassDescriptor
     virtual void setFieldStructValuePointer(omnetpp::any_ptr object, int field, int i, omnetpp::any_ptr ptr) const override;
 };
 
-Register_ClassDescriptor(MinMaxMsgDescriptor)
+Register_ClassDescriptor(MaxMinMsgDescriptor)
 
-MinMaxMsgDescriptor::MinMaxMsgDescriptor() : omnetpp::cClassDescriptor(omnetpp::opp_typename(typeid(MinMaxMsg)), "omnetpp::cMessage")
+MaxMinMsgDescriptor::MaxMinMsgDescriptor() : omnetpp::cClassDescriptor(omnetpp::opp_typename(typeid(MaxMinMsg)), "omnetpp::cMessage")
 {
     propertyNames = nullptr;
 }
 
-MinMaxMsgDescriptor::~MinMaxMsgDescriptor()
+MaxMinMsgDescriptor::~MaxMinMsgDescriptor()
 {
     delete[] propertyNames;
 }
 
-bool MinMaxMsgDescriptor::doesSupport(omnetpp::cObject *obj) const
+bool MaxMinMsgDescriptor::doesSupport(omnetpp::cObject *obj) const
 {
-    return dynamic_cast<MinMaxMsg *>(obj)!=nullptr;
+    return dynamic_cast<MaxMinMsg *>(obj)!=nullptr;
 }
 
-const char **MinMaxMsgDescriptor::getPropertyNames() const
+const char **MaxMinMsgDescriptor::getPropertyNames() const
 {
     if (!propertyNames) {
         static const char *names[] = {  nullptr };
@@ -305,19 +291,19 @@ const char **MinMaxMsgDescriptor::getPropertyNames() const
     return propertyNames;
 }
 
-const char *MinMaxMsgDescriptor::getProperty(const char *propertyName) const
+const char *MaxMinMsgDescriptor::getProperty(const char *propertyName) const
 {
     omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
     return base ? base->getProperty(propertyName) : nullptr;
 }
 
-int MinMaxMsgDescriptor::getFieldCount() const
+int MaxMinMsgDescriptor::getFieldCount() const
 {
     omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    return base ? 4+base->getFieldCount() : 4;
+    return base ? 3+base->getFieldCount() : 3;
 }
 
-unsigned int MinMaxMsgDescriptor::getFieldTypeFlags(int field) const
+unsigned int MaxMinMsgDescriptor::getFieldTypeFlags(int field) const
 {
     omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
     if (base) {
@@ -329,12 +315,11 @@ unsigned int MinMaxMsgDescriptor::getFieldTypeFlags(int field) const
         FD_ISEDITABLE,    // FIELD_msgId
         FD_ISEDITABLE,    // FIELD_source
         FD_ISEDITABLE,    // FIELD_destination
-        FD_ISEDITABLE,    // FIELD_hopCount
     };
-    return (field >= 0 && field < 4) ? fieldTypeFlags[field] : 0;
+    return (field >= 0 && field < 3) ? fieldTypeFlags[field] : 0;
 }
 
-const char *MinMaxMsgDescriptor::getFieldName(int field) const
+const char *MaxMinMsgDescriptor::getFieldName(int field) const
 {
     omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
     if (base) {
@@ -346,23 +331,21 @@ const char *MinMaxMsgDescriptor::getFieldName(int field) const
         "msgId",
         "source",
         "destination",
-        "hopCount",
     };
-    return (field >= 0 && field < 4) ? fieldNames[field] : nullptr;
+    return (field >= 0 && field < 3) ? fieldNames[field] : nullptr;
 }
 
-int MinMaxMsgDescriptor::findField(const char *fieldName) const
+int MaxMinMsgDescriptor::findField(const char *fieldName) const
 {
     omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
     int baseIndex = base ? base->getFieldCount() : 0;
     if (strcmp(fieldName, "msgId") == 0) return baseIndex + 0;
     if (strcmp(fieldName, "source") == 0) return baseIndex + 1;
     if (strcmp(fieldName, "destination") == 0) return baseIndex + 2;
-    if (strcmp(fieldName, "hopCount") == 0) return baseIndex + 3;
     return base ? base->findField(fieldName) : -1;
 }
 
-const char *MinMaxMsgDescriptor::getFieldTypeString(int field) const
+const char *MaxMinMsgDescriptor::getFieldTypeString(int field) const
 {
     omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
     if (base) {
@@ -374,12 +357,11 @@ const char *MinMaxMsgDescriptor::getFieldTypeString(int field) const
         "int",    // FIELD_msgId
         "int",    // FIELD_source
         "int",    // FIELD_destination
-        "int",    // FIELD_hopCount
     };
-    return (field >= 0 && field < 4) ? fieldTypeStrings[field] : nullptr;
+    return (field >= 0 && field < 3) ? fieldTypeStrings[field] : nullptr;
 }
 
-const char **MinMaxMsgDescriptor::getFieldPropertyNames(int field) const
+const char **MaxMinMsgDescriptor::getFieldPropertyNames(int field) const
 {
     omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
     if (base) {
@@ -392,7 +374,7 @@ const char **MinMaxMsgDescriptor::getFieldPropertyNames(int field) const
     }
 }
 
-const char *MinMaxMsgDescriptor::getFieldProperty(int field, const char *propertyName) const
+const char *MaxMinMsgDescriptor::getFieldProperty(int field, const char *propertyName) const
 {
     omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
     if (base) {
@@ -405,7 +387,7 @@ const char *MinMaxMsgDescriptor::getFieldProperty(int field, const char *propert
     }
 }
 
-int MinMaxMsgDescriptor::getFieldArraySize(omnetpp::any_ptr object, int field) const
+int MaxMinMsgDescriptor::getFieldArraySize(omnetpp::any_ptr object, int field) const
 {
     omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
     if (base) {
@@ -413,13 +395,13 @@ int MinMaxMsgDescriptor::getFieldArraySize(omnetpp::any_ptr object, int field) c
             return base->getFieldArraySize(object, field);
         field -= base->getFieldCount();
     }
-    MinMaxMsg *pp = omnetpp::fromAnyPtr<MinMaxMsg>(object); (void)pp;
+    MaxMinMsg *pp = omnetpp::fromAnyPtr<MaxMinMsg>(object); (void)pp;
     switch (field) {
         default: return 0;
     }
 }
 
-void MinMaxMsgDescriptor::setFieldArraySize(omnetpp::any_ptr object, int field, int size) const
+void MaxMinMsgDescriptor::setFieldArraySize(omnetpp::any_ptr object, int field, int size) const
 {
     omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
     if (base) {
@@ -429,13 +411,13 @@ void MinMaxMsgDescriptor::setFieldArraySize(omnetpp::any_ptr object, int field, 
         }
         field -= base->getFieldCount();
     }
-    MinMaxMsg *pp = omnetpp::fromAnyPtr<MinMaxMsg>(object); (void)pp;
+    MaxMinMsg *pp = omnetpp::fromAnyPtr<MaxMinMsg>(object); (void)pp;
     switch (field) {
-        default: throw omnetpp::cRuntimeError("Cannot set array size of field %d of class 'MinMaxMsg'", field);
+        default: throw omnetpp::cRuntimeError("Cannot set array size of field %d of class 'MaxMinMsg'", field);
     }
 }
 
-const char *MinMaxMsgDescriptor::getFieldDynamicTypeString(omnetpp::any_ptr object, int field, int i) const
+const char *MaxMinMsgDescriptor::getFieldDynamicTypeString(omnetpp::any_ptr object, int field, int i) const
 {
     omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
     if (base) {
@@ -443,13 +425,13 @@ const char *MinMaxMsgDescriptor::getFieldDynamicTypeString(omnetpp::any_ptr obje
             return base->getFieldDynamicTypeString(object,field,i);
         field -= base->getFieldCount();
     }
-    MinMaxMsg *pp = omnetpp::fromAnyPtr<MinMaxMsg>(object); (void)pp;
+    MaxMinMsg *pp = omnetpp::fromAnyPtr<MaxMinMsg>(object); (void)pp;
     switch (field) {
         default: return nullptr;
     }
 }
 
-std::string MinMaxMsgDescriptor::getFieldValueAsString(omnetpp::any_ptr object, int field, int i) const
+std::string MaxMinMsgDescriptor::getFieldValueAsString(omnetpp::any_ptr object, int field, int i) const
 {
     omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
     if (base) {
@@ -457,17 +439,16 @@ std::string MinMaxMsgDescriptor::getFieldValueAsString(omnetpp::any_ptr object, 
             return base->getFieldValueAsString(object,field,i);
         field -= base->getFieldCount();
     }
-    MinMaxMsg *pp = omnetpp::fromAnyPtr<MinMaxMsg>(object); (void)pp;
+    MaxMinMsg *pp = omnetpp::fromAnyPtr<MaxMinMsg>(object); (void)pp;
     switch (field) {
         case FIELD_msgId: return long2string(pp->getMsgId());
         case FIELD_source: return long2string(pp->getSource());
         case FIELD_destination: return long2string(pp->getDestination());
-        case FIELD_hopCount: return long2string(pp->getHopCount());
         default: return "";
     }
 }
 
-void MinMaxMsgDescriptor::setFieldValueAsString(omnetpp::any_ptr object, int field, int i, const char *value) const
+void MaxMinMsgDescriptor::setFieldValueAsString(omnetpp::any_ptr object, int field, int i, const char *value) const
 {
     omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
     if (base) {
@@ -477,17 +458,16 @@ void MinMaxMsgDescriptor::setFieldValueAsString(omnetpp::any_ptr object, int fie
         }
         field -= base->getFieldCount();
     }
-    MinMaxMsg *pp = omnetpp::fromAnyPtr<MinMaxMsg>(object); (void)pp;
+    MaxMinMsg *pp = omnetpp::fromAnyPtr<MaxMinMsg>(object); (void)pp;
     switch (field) {
         case FIELD_msgId: pp->setMsgId(string2long(value)); break;
         case FIELD_source: pp->setSource(string2long(value)); break;
         case FIELD_destination: pp->setDestination(string2long(value)); break;
-        case FIELD_hopCount: pp->setHopCount(string2long(value)); break;
-        default: throw omnetpp::cRuntimeError("Cannot set field %d of class 'MinMaxMsg'", field);
+        default: throw omnetpp::cRuntimeError("Cannot set field %d of class 'MaxMinMsg'", field);
     }
 }
 
-omnetpp::cValue MinMaxMsgDescriptor::getFieldValue(omnetpp::any_ptr object, int field, int i) const
+omnetpp::cValue MaxMinMsgDescriptor::getFieldValue(omnetpp::any_ptr object, int field, int i) const
 {
     omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
     if (base) {
@@ -495,17 +475,16 @@ omnetpp::cValue MinMaxMsgDescriptor::getFieldValue(omnetpp::any_ptr object, int 
             return base->getFieldValue(object,field,i);
         field -= base->getFieldCount();
     }
-    MinMaxMsg *pp = omnetpp::fromAnyPtr<MinMaxMsg>(object); (void)pp;
+    MaxMinMsg *pp = omnetpp::fromAnyPtr<MaxMinMsg>(object); (void)pp;
     switch (field) {
         case FIELD_msgId: return pp->getMsgId();
         case FIELD_source: return pp->getSource();
         case FIELD_destination: return pp->getDestination();
-        case FIELD_hopCount: return pp->getHopCount();
-        default: throw omnetpp::cRuntimeError("Cannot return field %d of class 'MinMaxMsg' as cValue -- field index out of range?", field);
+        default: throw omnetpp::cRuntimeError("Cannot return field %d of class 'MaxMinMsg' as cValue -- field index out of range?", field);
     }
 }
 
-void MinMaxMsgDescriptor::setFieldValue(omnetpp::any_ptr object, int field, int i, const omnetpp::cValue& value) const
+void MaxMinMsgDescriptor::setFieldValue(omnetpp::any_ptr object, int field, int i, const omnetpp::cValue& value) const
 {
     omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
     if (base) {
@@ -515,17 +494,16 @@ void MinMaxMsgDescriptor::setFieldValue(omnetpp::any_ptr object, int field, int 
         }
         field -= base->getFieldCount();
     }
-    MinMaxMsg *pp = omnetpp::fromAnyPtr<MinMaxMsg>(object); (void)pp;
+    MaxMinMsg *pp = omnetpp::fromAnyPtr<MaxMinMsg>(object); (void)pp;
     switch (field) {
         case FIELD_msgId: pp->setMsgId(omnetpp::checked_int_cast<int>(value.intValue())); break;
         case FIELD_source: pp->setSource(omnetpp::checked_int_cast<int>(value.intValue())); break;
         case FIELD_destination: pp->setDestination(omnetpp::checked_int_cast<int>(value.intValue())); break;
-        case FIELD_hopCount: pp->setHopCount(omnetpp::checked_int_cast<int>(value.intValue())); break;
-        default: throw omnetpp::cRuntimeError("Cannot set field %d of class 'MinMaxMsg'", field);
+        default: throw omnetpp::cRuntimeError("Cannot set field %d of class 'MaxMinMsg'", field);
     }
 }
 
-const char *MinMaxMsgDescriptor::getFieldStructName(int field) const
+const char *MaxMinMsgDescriptor::getFieldStructName(int field) const
 {
     omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
     if (base) {
@@ -538,7 +516,7 @@ const char *MinMaxMsgDescriptor::getFieldStructName(int field) const
     };
 }
 
-omnetpp::any_ptr MinMaxMsgDescriptor::getFieldStructValuePointer(omnetpp::any_ptr object, int field, int i) const
+omnetpp::any_ptr MaxMinMsgDescriptor::getFieldStructValuePointer(omnetpp::any_ptr object, int field, int i) const
 {
     omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
     if (base) {
@@ -546,13 +524,13 @@ omnetpp::any_ptr MinMaxMsgDescriptor::getFieldStructValuePointer(omnetpp::any_pt
             return base->getFieldStructValuePointer(object, field, i);
         field -= base->getFieldCount();
     }
-    MinMaxMsg *pp = omnetpp::fromAnyPtr<MinMaxMsg>(object); (void)pp;
+    MaxMinMsg *pp = omnetpp::fromAnyPtr<MaxMinMsg>(object); (void)pp;
     switch (field) {
         default: return omnetpp::any_ptr(nullptr);
     }
 }
 
-void MinMaxMsgDescriptor::setFieldStructValuePointer(omnetpp::any_ptr object, int field, int i, omnetpp::any_ptr ptr) const
+void MaxMinMsgDescriptor::setFieldStructValuePointer(omnetpp::any_ptr object, int field, int i, omnetpp::any_ptr ptr) const
 {
     omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
     if (base) {
@@ -562,9 +540,9 @@ void MinMaxMsgDescriptor::setFieldStructValuePointer(omnetpp::any_ptr object, in
         }
         field -= base->getFieldCount();
     }
-    MinMaxMsg *pp = omnetpp::fromAnyPtr<MinMaxMsg>(object); (void)pp;
+    MaxMinMsg *pp = omnetpp::fromAnyPtr<MaxMinMsg>(object); (void)pp;
     switch (field) {
-        default: throw omnetpp::cRuntimeError("Cannot set field %d of class 'MinMaxMsg'", field);
+        default: throw omnetpp::cRuntimeError("Cannot set field %d of class 'MaxMinMsg'", field);
     }
 }
 
