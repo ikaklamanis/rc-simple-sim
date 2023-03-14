@@ -8,72 +8,7 @@
 // `license' for details on this and other legal matters.
 //
 
-#include <stdio.h>
-#include <string.h>
-#include <omnetpp.h>
-
-#include <vector>
-#include <map>
-
-using namespace omnetpp;
-
-// Include a generated file: the header file created from tictoc13.msg.
-// It contains the definition of the TictocMsg10 class, derived from
-// cMessage.
-#include "maxmin_m.h"
-
-
-// for dynamic type checking
-template<typename Base, typename T>
-inline bool instanceof(const T *ptr) {
-   return dynamic_cast<const Base*>(ptr) != nullptr;
-}
-
-struct Config {
-    const int LEADER_IDX = 0;
-};
-
-struct MsgInfo {
-    int msgId;
-    int intermediate;
-    std::set<int> receivers;
-    int numAcksExp;
-};
-
-
-
-class RcNode : public cSimpleModule {
-    private:
-        float bdInRate, bdOutRate;
-        int GateSize;
-        std::map<int, MsgInfo> msgMap;
-        std::map<int, int> peerToGate, gateToPeer;
-        Config config;
-
-    protected:
-        virtual MaxMinMsg *generateMessage(int dest);
-        virtual void forwardMessage(cMessage *msg, int dstIdx);
-        virtual void initialize() override;
-        virtual void handleMessage(cMessage *msg) override;
-
-        virtual void fillPeerGateInfo();
-        virtual void handleMaxMinMessage(MaxMinMsg *msg);
-        virtual void handleACKMessage(ACKMsg *msg);
-        virtual void broadcastMessage(MaxMinMsg *msg, std::vector<int> rx);
-        virtual void sendACK(MaxMinMsg *msg, int dstIdx);
-
-    public:
-        RcNode() {}
-        RcNode(float inRate, float outRate){
-            bdInRate = inRate;
-            bdOutRate = outRate;
-        }
-
-        float getBdInRate() {return bdInRate;}
-        void setBdInRate(float newBdInRate) {bdInRate = newBdInRate;}
-        float getBdOutRate() {return bdOutRate;}
-        void setBdOutRate(float newBdOutRate) {bdOutRate = newBdOutRate;}
-};
+#include "maxmin.h"
 
 
 Define_Module(RcNode);
@@ -113,6 +48,14 @@ void RcNode::fillPeerGateInfo(){
 //            EV << "node " << getIndex() << " - peer: " << peerIndex << " - gate: " << gateIndex << "\n";
         }
     }
+}
+
+std::pair<int,int> RcNode::getMinRxNode(std::map<int, int> nodeToNumRx, int minRxNum){
+    
+}
+
+void RcNode::updateUScores(){
+
 }
 
 
@@ -175,6 +118,10 @@ void RcNode::handleACKMessage(ACKMsg *msg){
 
 }
 
+void RcNode::handleSelfTimerMessage(MaxMinMsg *mmmsg){
+
+}
+
 void RcNode::handleMessage(cMessage *msg){
 
     if (msg->isSelfMessage()) {
@@ -203,6 +150,18 @@ void RcNode::handleMessage(cMessage *msg){
         ACKMsg *ackmsg = check_and_cast<ACKMsg *>(msg);
         handleACKMessage(ackmsg);
     }
+
+}
+
+void RcNode::handleOutMsg(MaxMinMsg *msg){
+
+}
+
+void RcNode::processNextOutMsg(){
+
+}
+
+void RcNode::processNextInMsg(){
 
 }
 

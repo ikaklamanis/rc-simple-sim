@@ -21,3 +21,27 @@ message ACKMsg
     int source;
     int destination;  
 }
+
+// only used as a self message
+message SelfTimer
+{
+    float msgTimer;
+}
+
+message InMsgTimer
+{
+    float msgTimer;
+    int msgId;
+}
+
+message OutMsgTimer
+{
+    float msgTimer;
+    int msgId;
+    int destination;
+}
+
+message AckTimeOut
+{
+    int msgId;
+}
