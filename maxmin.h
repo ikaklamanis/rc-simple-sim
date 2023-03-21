@@ -34,6 +34,7 @@ class RcNode : public cSimpleModule {
 
         std::queue<std::pair<int,int>> outQueue;
         bool outQueueBusy = false;
+
         std::queue<int> inQueue;
         bool inQueueBusy = false;
 
