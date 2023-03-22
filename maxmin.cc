@@ -22,9 +22,11 @@ void RcNode::initialize(){
     // Module 0 sends the first message
     if (getIndex() == 0) {
 
+        bdOutRate = 1;
+
         SelfTimer *stmsg = new SelfTimer();
 
-        float duration = config.MsgSize / bdInRate;
+        float duration = config.MsgSize / bdOutRate;
         stmsg->setMsgTimer(stmsg->getMsgTimer() + duration);
 
         // Todo: first message doesn't need to go through both pipes (self msgtimer and out msgtimer)
@@ -42,16 +44,86 @@ void RcNode::fillBookkeepingInfo(){
             peerToGate[peerIndex] = gateIndex;
             gateToPeer[gateIndex] = peerIndex;
 //            EV << "node " << getIndex() << " - peer: " << peerIndex << " - gate: " << gateIndex << "\n";
+            uScores[peerIndex] = config.initUtilScore;
         }
     }
 
 }
 
-std::pair<int,int> RcNode::getMinRxNode(std::map<int, int> nodeToNumRx, int minRxNum){
-    return std::pair<int,int>(1,1);
+std::pair<int,int> RcNode::getMinRxNode(std::map<int, int> numRx, int minRxNumInit){
+    int minRxNum = minRxNumInit;
+    int minRxNodeIdx = 1;
+    std::map<int, int>::iterator it;
+    for (it = numRx.begin(); it != numRx.end(); it++){
+        int nodeIdx = it->first;
+        int rxNum = it->second;
+        if (rxNum < minRxNum){
+            minRxNum = rxNum;
+            minRxNodeIdx = nodeIdx;
+        }
+    }
+    return std::pair<int,int>(minRxNodeIdx, minRxNum);
 }
 
 void RcNode::updateUScores(){
+
+    int firstMsgId = std::max(0, currMsgId - config.DistFromCurrMsgId - config.TotalMsgsToCheck + 1);
+    int lastMsgId = std::max(0, currMsgId - config.DistFromCurrMsgId);
+    int numMsgsToCheck = lastMsgId - firstMsgId + 1;
+
+    std::map<int, int> numRx;
+    std::map<int, int>::iterator it;
+    for (it = peerToGate.begin(); it != peerToGate.end(); it++){
+        int nodeIdx = it->first;
+        if (nodeIdx != config.LEADER_IDX){
+            numRx[nodeIdx] = 0;
+        }
+    }
+    for (int msgId = firstMsgId; msgId <= lastMsgId; msgId++){
+        for (auto nodeIdx : msgMap[msgId].receivers){
+            numRx[nodeIdx] ++ ;
+        }
+    }
+    EV << "numRx map: \n";
+    printMapIntToInt(numRx);
+
+    std::pair<int,int> minRxPair = getMinRxNode(numRx, numMsgsToCheck);
+    int minRxNodeIdx = minRxPair.first;
+    int minRxNum = minRxPair.second;
+
+    EV << "firstMsgId: " << firstMsgId << ", lastMsgId: " << lastMsgId << "\n";
+    EV << "MinRxNode nodeIdx: " << minRxNodeIdx << " received " << minRxNum << " messages.\n";
+
+    std::map<int, int> numSentToMinRx;
+    std::map<int, int> numRxAsInterm;
+//    std::map<int, int>::iterator it;
+    for (int msgId = firstMsgId; msgId <= lastMsgId; msgId++){
+        int intermNodeIdx = msgMap[msgId].intermediate;
+        numRxAsInterm[intermNodeIdx] ++;
+
+        if (intermNodeIdx == minRxNodeIdx){
+            numSentToMinRx[intermNodeIdx] ++;
+        }
+        else{
+            for (auto dstNodeIdx : msgMap[msgId].receivers){
+                if (dstNodeIdx == minRxNodeIdx){
+                    numSentToMinRx[intermNodeIdx] ++;
+                }
+            }
+        }
+    }
+
+    EV << "numSentToMinRx map: \n";
+    printMapIntToInt(numSentToMinRx);
+
+
+    for (it = peerToGate.begin(); it != peerToGate.end(); it++){
+        int nodeIdx = it->first;
+        if (numRxAsInterm[nodeIdx] > 0 && numMsgsToCheck > 0){
+            uScores[nodeIdx] = (float)numSentToMinRx[nodeIdx] / (float)numRxAsInterm[nodeIdx];
+        }
+//        uScores[nodeIdx] = numSentToMinRx[nodeIdx] / (numMsgsToCheck * (GateSize - 1));
+    }
 
 }
 
@@ -94,25 +166,37 @@ void RcNode::handleMaxMinMessage(MaxMinMsg *msg){
     }
 }
 
-void RcNode::handleACKMessage(ACKMsg *msg){
+void RcNode::handleACKMessage(ACKMsg *ackMsg){
 
-    int peerGate = msg->getArrivalGate()->getIndex();
+    int peerGate = ackMsg->getArrivalGate()->getIndex();
     int peerIdx = gateToPeer[peerGate];
-    int msgId = msg->getMsgId();
+    int msgId = ackMsg->getMsgId();
     // Message arrived.
-//    EV << "Node " << getIndex() << " received ACK message for msgID " << msgId << " from node " << peerIdx << "\n";
+    EV << "Node " << getIndex() << " received ACK message for msgID " << msgId << " from node " << peerIdx << "\n";
 
     // TODO: do stuff with ACK
 
     // if msgId exists as key in msgMap
-    if (msgMap.count(msg->getMsgId())){
-        msgMap[msg->getMsgId()].receivers.insert(peerIdx);
-        // check if have received all ACKS
-        if (msgMap[msg->getMsgId()].receivers.size() == msgMap[msg->getMsgId()].numAcksExp){
-            EV << "Node " << getIndex() << " received all ACKS for msgID " << msgId << "\n";
+    if (msgMap.count(msgId)){
+        if (msgMap[msgId].timeOut){
+            EV << "ACK TIMEOUT: Node " << getIndex() << " received ACK after timeout for msgID " << msgId << "\n";
+        }
+        else{
+            msgMap[msgId].receivers.insert(peerIdx);
+            // check if have received all ACKS
+            EV << "Node " << getIndex() << " msgMap[msgId].receivers.size() = " << msgMap[msgId].receivers.size() << "\n";
+            EV << "Node " << getIndex() << " numAcksExp = " << msgMap[msgId].numAcksExp << "\n";
+            if (msgMap[msgId].receivers.size() == msgMap[msgId].numAcksExp){
+                EV << "Node " << getIndex() << " received all ACKS for msgID " << msgId << "\n";
+            }
         }
     }
 
+}
+
+void RcNode::handleACKTimeOutMessage(AckTimeOut *atmsg){
+    int msgId = atmsg->getMsgId();
+    msgMap.at(msgId).timeOut = true;
 }
 
 void RcNode::handleSelfTimerMessage(SelfTimer *stmsg){
@@ -121,28 +205,66 @@ void RcNode::handleSelfTimerMessage(SelfTimer *stmsg){
     MsgInfo newMsgInfo;
     newMsgInfo.msgId = currMsgId;
     newMsgInfo.numAcksExp = GateSize;
-    msgMap.insert(std::pair<int, MsgInfo>(currMsgId, newMsgInfo));
+    newMsgInfo.timeOut = false;
 
-//    std::pair<int,int> minRx = getMinRxNode();
-//    int minRxNodeIdx = minRx.first;
-//    int minRxNum = minRx.second;
+    updateUScores();
+    EV << "Updated Utility Scores \n";
+    printMapIntToFloat(uScores);
+    std::vector<std::pair<int,float>> nodesRanked = sortMapByValue(uScores);
+    int intermNodeIdx = nodesRanked.back().first;
+    EV << "Next intermediate node: " << intermNodeIdx << "\n";
 
-//    updateUScores();
-    int intermediateNodeIdx = 1;
+    newMsgInfo.intermediate = intermNodeIdx;
+    msgMap.insert(std::pair<int, MsgInfo>(currMsgId, newMsgInfo)); // this map is for internal bookkeeping (check if all acks received)
+    EV << "msgMap at msgId: " << currMsgId << " has numAcksExp = " << msgMap[currMsgId].numAcksExp << "\n";
+
+//    int intermNodeIdx = 1;
+
+    std::vector<int> rx;
+    rx.push_back(intermNodeIdx);
+    broadcastMessage(mmmsg, rx);
+
+    AckTimeOut *ackTimeOut = new AckTimeOut();
+    ackTimeOut->setMsgId(currMsgId);
+    scheduleAt(simTime() + config.LeaderMsgTimeout, ackTimeOut);
 
     currMsgId++;
 
-    std::vector<int> rx;
-    rx.push_back(intermediateNodeIdx);
-    broadcastMessage(mmmsg, rx);
-
     SelfTimer *newstmsg = new SelfTimer();
-
-    float duration = config.MsgSize / bdInRate;
+    float duration = config.MsgSize / bdOutRate;
     newstmsg->setMsgTimer(stmsg->getMsgTimer() + duration);
-
     scheduleAt(newstmsg->getMsgTimer(), newstmsg);
+}
 
+void RcNode::handleInMessageTimer(InMsgTimer *intmsg){
+    int inMsgId = intmsg->getMsgId();
+    MaxMinMsg *inmsg = inMsgMap.at(inMsgId);
+
+    handleMaxMinMessage(inmsg);
+
+    inQueueBusy = false;
+    if (!inQueueBusy){
+        if (!inQueue.empty()){
+            inQueueBusy = true;
+            processNextInMsg();
+        }
+    }
+}
+
+void RcNode::handleOutMessageTimer(OutMsgTimer *outtmsg){
+    int outMsgId = outtmsg->getMsgId();
+    int outMsgDstIdx = outtmsg->getDestination();
+    MaxMinMsg *mmmsg = outMsgMap.at(std::pair<int,int>(outMsgId, outMsgDstIdx));
+
+    forwardMessage(mmmsg, outMsgDstIdx);
+
+    outQueueBusy = false;
+    if (!outQueueBusy){
+        if (!outQueue.empty()){
+            outQueueBusy = true;
+            processNextOutMsg();
+        }
+    }
 }
 
 void RcNode::handleMessage(cMessage *msg){
@@ -154,38 +276,19 @@ void RcNode::handleMessage(cMessage *msg){
         }
         else if(instanceof<InMsgTimer>(msg)){
             InMsgTimer *intmsg = check_and_cast<InMsgTimer *>(msg);
-            int inMsgId = intmsg->getMsgId();
-            MaxMinMsg *inmsg = inMsgMap.at(inMsgId);
-
-            handleMaxMinMessage(inmsg);
-
-            inQueueBusy = false;
-            if (!inQueueBusy){
-                if (!inQueue.empty()){
-                    inQueueBusy = true;
-                    processNextInMsg();
-                }
-            }
-
+            handleInMessageTimer(intmsg);
         }
         else if(instanceof<OutMsgTimer>(msg)){
             OutMsgTimer *outtmsg = check_and_cast<OutMsgTimer *>(msg);
-            int outMsgId = outtmsg->getMsgId();
-            int outMsgDstIdx = outtmsg->getDestination();
-            MaxMinMsg *mmmsg = outMsgMap.at(std::pair<int,int>(outMsgId, outMsgDstIdx));
-
-            forwardMessage(mmmsg, outMsgDstIdx);
-
-            outQueueBusy = false;
-            if (!outQueueBusy){
-                if (!outQueue.empty()){
-                    outQueueBusy = true;
-                    processNextOutMsg();
-                }
-            }
+            handleOutMessageTimer(outtmsg);
+        }
+        else if(instanceof<AckTimeOut>(msg)){
+            AckTimeOut *atmsg = check_and_cast<AckTimeOut *>(msg);
+            handleACKTimeOutMessage(atmsg);
         }
     }
 
+    // msg is not a self message
     if(instanceof<MaxMinMsg>(msg)) {
 //        EV << "msg " << msg << " is of type MaxMinMsg \n";
         MaxMinMsg *mmmsg = check_and_cast<MaxMinMsg *>(msg);
@@ -209,6 +312,7 @@ void RcNode::handleMessage(cMessage *msg){
 
 }
 
+
 void RcNode::handleOutMsg(MaxMinMsg *msg){
     MaxMinMsg *mmmsg = check_and_cast<MaxMinMsg *>(msg);
 
@@ -222,7 +326,6 @@ void RcNode::handleOutMsg(MaxMinMsg *msg){
             processNextOutMsg();
         }
     }
-
 }
 
 

@@ -10,10 +10,8 @@ bool sortByVal(const std::pair<int, int> &a,
 
 std::vector<std::pair<int,float>> sortMapByValue(std::map<int,float> M)
 {
-
     // Declare vector of pairs
     std::vector<std::pair<int,float>> A;
-
     // Copy key-value pair from Map
     // to vector of pairs
     for (auto& it : M) {
@@ -21,8 +19,6 @@ std::vector<std::pair<int,float>> sortMapByValue(std::map<int,float> M)
     }
     // Sort using comparator function
     sort(A.begin(), A.end(), sortByVal);
-
-
     return A;
 }
 

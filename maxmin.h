@@ -49,6 +49,11 @@ class RcNode : public cSimpleModule {
 
         virtual void fillBookkeepingInfo();
         virtual void handleSelfTimerMessage(SelfTimer *tmsg);
+        virtual void handleACKTimeOutMessage(AckTimeOut *atmsg);
+        virtual void handleInMessageTimer(InMsgTimer *intmsg);
+        virtual void handleOutMessageTimer(OutMsgTimer *outtmsg);
+
+
         virtual void handleMaxMinMessage(MaxMinMsg *mmmsg);
         virtual void handleACKMessage(ACKMsg *amsg);
         virtual void broadcastMessage(MaxMinMsg *msg, std::vector<int> rx);
