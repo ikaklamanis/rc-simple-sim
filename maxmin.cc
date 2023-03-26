@@ -17,12 +17,22 @@ Define_Module(RcNode);
 void RcNode::initialize(){
 
     fillBookkeepingInfo();
-    GateSize = gateSize("gate");
+
+    bdInRate = ingress[getIndex()];
+    bdOutRate = egress[getIndex()];
+    EV << "Node " << getIndex() << " has in = " << bdInRate << " and e = " << bdOutRate << "\n";
+    EV << "GateSize = " << GateSize << "\n";
+
+    msgTimeOut = config.ackTimeOutFactor * (float) config.MsgSize / (float) std::min(bdInRate, bdOutRate);
+//    msgTimeOut = 2;
+
+    WATCH(numReceived);
+    WATCH(numRxAsInterm);
 
     // Module 0 sends the first message
     if (getIndex() == 0) {
 
-        bdOutRate = 1;
+//        bdOutRate = 1;
 
         SelfTimer *stmsg = new SelfTimer();
 
@@ -36,6 +46,7 @@ void RcNode::initialize(){
 }
 
 void RcNode::fillBookkeepingInfo(){
+    GateSize = gateSize("gate");
     for (cModule::GateIterator i(this); !i.end(); i++) {
         cGate *gate = *i;
         int gateIndex = gate->getIndex();
@@ -48,6 +59,15 @@ void RcNode::fillBookkeepingInfo(){
         }
     }
 
+}
+
+int RcNode::getLastMsgIdToCheck(){
+    for (int msgId = currMsgId; msgId >= 0; msgId--) {
+        if (msgMap[msgId].timeOut){
+            return msgId;
+        }
+    }
+    return -1;
 }
 
 std::pair<int,int> RcNode::getMinRxNode(std::map<int, int> numRx, int minRxNumInit){
@@ -66,9 +86,18 @@ std::pair<int,int> RcNode::getMinRxNode(std::map<int, int> numRx, int minRxNumIn
 }
 
 void RcNode::updateUScores(){
+    int lastMsgId = getLastMsgIdToCheck();
+    int firstMsgId = std::max(0, lastMsgId - config.TotalMsgsToCheck + 1);
+//    int lastMsgId = currMsgId - config.DistFromCurrMsgId;
 
-    int firstMsgId = std::max(0, currMsgId - config.DistFromCurrMsgId - config.TotalMsgsToCheck + 1);
-    int lastMsgId = std::max(0, currMsgId - config.DistFromCurrMsgId);
+    EV << "firstMsgId: " << firstMsgId << ", lastMsgId: " << lastMsgId << "\n";
+
+    if (lastMsgId < firstMsgId){
+        EV << "lastMsgId < firstMsgId: will not update utility scores \n";
+        return;
+    }
+
+//    int lastMsgId = std::max(0, currMsgId - config.DistFromCurrMsgId);
     int numMsgsToCheck = lastMsgId - firstMsgId + 1;
 
     std::map<int, int> numRx;
@@ -91,7 +120,6 @@ void RcNode::updateUScores(){
     int minRxNodeIdx = minRxPair.first;
     int minRxNum = minRxPair.second;
 
-    EV << "firstMsgId: " << firstMsgId << ", lastMsgId: " << lastMsgId << "\n";
     EV << "MinRxNode nodeIdx: " << minRxNodeIdx << " received " << minRxNum << " messages.\n";
 
     std::map<int, int> numSentToMinRx;
@@ -138,6 +166,7 @@ void RcNode::handleMaxMinMessage(MaxMinMsg *msg){
 
     // send ACK to sender
     sendACK(msg, peerIdx);
+    numReceived ++ ;
 
     // DONE: find connection between gate index and module index
     if (peerIdx == config.LEADER_IDX) {
@@ -145,7 +174,9 @@ void RcNode::handleMaxMinMessage(MaxMinMsg *msg){
         MsgInfo newMsgInfo;
         newMsgInfo.msgId = msg->getMsgId();
         newMsgInfo.numAcksExp = GateSize - 1;
-        msgMap.insert(std::pair<int, MsgInfo>(msg->getMsgId(), newMsgInfo));
+        newMsgInfo.timeOut = false;
+//        msgMap.insert(std::pair<int, MsgInfo>(msg->getMsgId(), newMsgInfo));
+        msgMap[msg->getMsgId()] = newMsgInfo;
 
         std::vector<int> rx;
         std::map<int, int>::iterator it;
@@ -157,6 +188,7 @@ void RcNode::handleMaxMinMessage(MaxMinMsg *msg){
             }
         }
         broadcastMessage(msg, rx);
+        numRxAsInterm ++ ;
     }
     else {
         bubble("RECEIVED mmmsg as dst node!");
@@ -172,20 +204,20 @@ void RcNode::handleACKMessage(ACKMsg *ackMsg){
     int peerIdx = gateToPeer[peerGate];
     int msgId = ackMsg->getMsgId();
     // Message arrived.
-    EV << "Node " << getIndex() << " received ACK message for msgID " << msgId << " from node " << peerIdx << "\n";
+//    EV << "Node " << getIndex() << " received ACK message for msgID " << msgId << " from node " << peerIdx << "\n";
 
     // TODO: do stuff with ACK
 
     // if msgId exists as key in msgMap
     if (msgMap.count(msgId)){
         if (msgMap[msgId].timeOut){
-            EV << "ACK TIMEOUT: Node " << getIndex() << " received ACK after timeout for msgID " << msgId << "\n";
+            EV_WARN << "ACK TIMEOUT: Node " << getIndex() << " received ACK after timeout for msgID " << msgId << "\n";
         }
         else{
             msgMap[msgId].receivers.insert(peerIdx);
             // check if have received all ACKS
-            EV << "Node " << getIndex() << " msgMap[msgId].receivers.size() = " << msgMap[msgId].receivers.size() << "\n";
-            EV << "Node " << getIndex() << " numAcksExp = " << msgMap[msgId].numAcksExp << "\n";
+//            EV << "Node " << getIndex() << " msgMap[msgId].receivers.size() = " << msgMap[msgId].receivers.size() << "\n";
+//            EV << "Node " << getIndex() << " numAcksExp = " << msgMap[msgId].numAcksExp << "\n";
             if (msgMap[msgId].receivers.size() == msgMap[msgId].numAcksExp){
                 EV << "Node " << getIndex() << " received all ACKS for msgID " << msgId << "\n";
             }
@@ -196,10 +228,12 @@ void RcNode::handleACKMessage(ACKMsg *ackMsg){
 
 void RcNode::handleACKTimeOutMessage(AckTimeOut *atmsg){
     int msgId = atmsg->getMsgId();
+    EV << "Node " << getIndex() << " received a self ACK Timeout for msgID " << msgId << "\n";
     msgMap.at(msgId).timeOut = true;
 }
 
 void RcNode::handleSelfTimerMessage(SelfTimer *stmsg){
+    EV << "Current msgId = " << currMsgId << "\n";
     MaxMinMsg *mmmsg = generateMessage(currMsgId);
 
     MsgInfo newMsgInfo;
@@ -207,16 +241,18 @@ void RcNode::handleSelfTimerMessage(SelfTimer *stmsg){
     newMsgInfo.numAcksExp = GateSize;
     newMsgInfo.timeOut = false;
 
+    EV << "Updating utility scores \n";
     updateUScores();
-    EV << "Updated Utility Scores \n";
+    EV << "Utility scores: \n";
     printMapIntToFloat(uScores);
     std::vector<std::pair<int,float>> nodesRanked = sortMapByValue(uScores);
     int intermNodeIdx = nodesRanked.back().first;
     EV << "Next intermediate node: " << intermNodeIdx << "\n";
 
     newMsgInfo.intermediate = intermNodeIdx;
-    msgMap.insert(std::pair<int, MsgInfo>(currMsgId, newMsgInfo)); // this map is for internal bookkeeping (check if all acks received)
-    EV << "msgMap at msgId: " << currMsgId << " has numAcksExp = " << msgMap[currMsgId].numAcksExp << "\n";
+    msgMap[currMsgId] = newMsgInfo;
+//    msgMap.insert(std::pair<int, MsgInfo>(currMsgId, newMsgInfo)); // this map is for internal bookkeeping (check if all acks received)
+//    EV << "msgMap at msgId: " << currMsgId << " has numAcksExp = " << msgMap[currMsgId].numAcksExp << "\n";
 
 //    int intermNodeIdx = 1;
 
@@ -226,7 +262,7 @@ void RcNode::handleSelfTimerMessage(SelfTimer *stmsg){
 
     AckTimeOut *ackTimeOut = new AckTimeOut();
     ackTimeOut->setMsgId(currMsgId);
-    scheduleAt(simTime() + config.LeaderMsgTimeout, ackTimeOut);
+    scheduleAt(simTime() + msgTimeOut, ackTimeOut);
 
     currMsgId++;
 

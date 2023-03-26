@@ -21,16 +21,16 @@ using namespace omnetpp;
 
 class RcNode : public cSimpleModule {
     private:
-        float bdInRate = 10;
-        float bdOutRate = 10;
+        long numReceived = 0;
+        long numRxAsInterm = 0;
+
+        float bdInRate;
+        float bdOutRate;
+
         int GateSize;
         std::map<int, MsgInfo> msgMap;
         std::map<int, int> peerToGate, gateToPeer;
         Config config;
-        // only for leader
-        std::map<int, float> uScores;
-        int leastRxNode;
-        int currMsgId = 0;
 
         std::queue<std::pair<int,int>> outQueue;
         bool outQueueBusy = false;
@@ -40,6 +40,13 @@ class RcNode : public cSimpleModule {
 
         std::map<int, MaxMinMsg*> inMsgMap;
         std::map<std::pair<int,int>, MaxMinMsg*> outMsgMap;
+
+        float msgTimeOut;
+
+        // only for leader
+        std::map<int, float> uScores;
+        int leastRxNode;
+        int currMsgId = 0;
 
     protected:
         virtual MaxMinMsg* generateMessage(int dest);
@@ -60,6 +67,7 @@ class RcNode : public cSimpleModule {
         virtual void sendACK(MaxMinMsg *msg, int dstIdx);
 
         virtual void updateUScores();
+        virtual int getLastMsgIdToCheck();
         virtual std::pair<int,int> getMinRxNode(std::map<int, int> nodeToNumRx, int minRxNum);
 
         virtual void handleOutMsg(MaxMinMsg *msg);

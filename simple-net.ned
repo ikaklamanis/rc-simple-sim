@@ -25,17 +25,18 @@ simple RcNode
 network MaxMinRC
 {
     types:
-        channel Channel extends ned.DelayChannel {
-            delay = 100ms;
+        channel Channel extends ned.DelayChannel
+        {
+            delay = 10ms;
         }
 
     submodules:
         node[4]: RcNode;
     connections:
-        node[0].gate++ <--> Channel <--> node[1].gate++;
-        node[0].gate++ <--> Channel <--> node[2].gate++;
-        node[0].gate++ <--> Channel <--> node[3].gate++;
-        node[1].gate++ <--> Channel <--> node[2].gate++;
-        node[1].gate++ <--> Channel <--> node[3].gate++;
-        node[2].gate++ <--> Channel <--> node[3].gate++;
+        //        peer[i] <--> node.peer++ for i=0..sizeof(peer)-1;
+        
+        for i=0..sizeof(node)-1, for j=i..sizeof(node)-1, if i!=j {
+            node[i].gate++ <--> Channel <--> node[j].gate++ ;
+        }
+
 }

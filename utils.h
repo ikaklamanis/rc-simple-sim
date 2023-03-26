@@ -10,16 +10,24 @@
 using namespace omnetpp;
 
 
+const int numNodes = 4;
+// the first node (index 0) is the leader
+const int ingress[numNodes] = {100, 400, 400, 400};
+const int egress[numNodes] =  {100, 800, 200, 200};
+
+//const int ackTimeOuts[numNodes] = {0.2, 0.2, 0.2, 0.2};
+
 struct Config {
     const int LEADER_IDX = 0;
     const int MsgSize = 1;
 
-    const int TotalMsgsToCheck = 10;
-    const int IntermMsgsToCheck = 5;
-    const int LeaderMsgTimeout = 5;
-    const int DistFromCurrMsgId = 1;
-    const float initUtilScore = 0.5;
+    const int TotalMsgsToCheck = 50;
+//    const int IntermMsgsToCheck = 5;
+//    const int LeaderMsgTimeout = 2;
+    const int DistFromCurrMsgId = 3;
+    const float initUtilScore = 1;
 
+    const float ackTimeOutFactor = 5.0;
 };
 
 struct MsgInfo {

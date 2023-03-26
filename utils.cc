@@ -26,15 +26,17 @@ std::vector<std::pair<int,float>> sortMapByValue(std::map<int,float> M)
 void printMapIntToInt(std::map<int, int> myMap){
     for(const auto& elem : myMap)
     {
-       EV << elem.first << " " << elem.second << "\n";
+       EV << elem.first << ": " << elem.second << "\n";
     }
+    EV << "\n";
 }
 
 void printMapIntToFloat(std::map<int, float> myMap){
     for(const auto& elem : myMap)
     {
-       EV << elem.first << " " << elem.second << "\n";
+       EV << elem.first << ": " << elem.second << "\n";
     }
+    EV << "\n";
 }
 
 void printMapPairIntIntToMaxMinMsg(std::map<std::pair<int,int>, MaxMinMsg*> myMap){
@@ -42,6 +44,7 @@ void printMapPairIntIntToMaxMinMsg(std::map<std::pair<int,int>, MaxMinMsg*> myMa
     {
        EV << "msgID: " << elem.first.first << ", dstIdx: " << elem.first.second << "\n";
     }
+    EV << "\n";
 }
 
 
