@@ -16,33 +16,47 @@ Define_Module(RcNode);
 
 void RcNode::initialize(){
 
+    // Providing a seed value
+    srand(getIndex());
+
+    // Get a random number
+    int random1 = rand();
+    int random2 = rand();
+
+    // Print the random number
+    EV << "Random number 1: " << random1 << endl;
+    EV << "Random number 2: " << random2 << endl;
+
+    // todo: discard map entries after a specified timeout, to avoid memory overflow
+
     fillBookkeepingInfo();
 
     bdInRate = ingress[getIndex()];
     bdOutRate = egress[getIndex()];
     EV << "Node " << getIndex() << " has in = " << bdInRate << " and e = " << bdOutRate << "\n";
     EV << "GateSize = " << GateSize << "\n";
-
-    msgTimeOut = config.ackTimeOutFactor * (float) config.MsgSize / (float) std::min(bdInRate, bdOutRate);
 //    msgTimeOut = 2;
 
     WATCH(numReceived);
     WATCH(numRxAsInterm);
 
-    // Module 0 sends the first message
+    // Leader (module 0) sends the first message
     if (getIndex() == 0) {
-
-//        bdOutRate = 1;
-
         SelfTimer *stmsg = new SelfTimer();
-
         float duration = config.MsgSize / bdOutRate;
-        stmsg->setMsgTimer(stmsg->getMsgTimer() + duration);
-
+//        stmsg->setMsgTimer(stmsg->getMsgTimer() + duration);
+        stmsg->setMsgTimer(duration);
         // Todo: first message doesn't need to go through both pipes (self msgtimer and out msgtimer)
         scheduleAt(stmsg->getMsgTimer(), stmsg);
-
     }
+
+    // schedule first probe msg
+    ProbeSelfTimer *pstmsg = new ProbeSelfTimer();
+    float pmDuration = aimdConfig.ProbeMsgFreq;
+    pstmsg->setMsgTimer(pmDuration);
+    pstmsg->setMsgId(getIndex());
+    scheduleAt(pstmsg->getMsgTimer(), pstmsg);
+
 }
 
 void RcNode::fillBookkeepingInfo(){
@@ -55,12 +69,15 @@ void RcNode::fillBookkeepingInfo(){
             peerToGate[peerIndex] = gateIndex;
             gateToPeer[gateIndex] = peerIndex;
 //            EV << "node " << getIndex() << " - peer: " << peerIndex << " - gate: " << gateIndex << "\n";
-            uScores[peerIndex] = config.initUtilScore;
+            uScores[peerIndex] = config.InitUtilScore;
+            dstNodesRates[peerIndex] = aimdConfig.InitVal;
+            distFromNextMsg[peerIndex] = 1;
         }
     }
 
 }
 
+// When updating the utility score of each peer, only consider messages for which the ACK timeout has elapsed.
 int RcNode::getLastMsgIdToCheck(){
     for (int msgId = currMsgId; msgId >= 0; msgId--) {
         if (msgMap[msgId].timeOut){
@@ -152,9 +169,7 @@ void RcNode::updateUScores(){
         }
 //        uScores[nodeIdx] = numSentToMinRx[nodeIdx] / (numMsgsToCheck * (GateSize - 1));
     }
-
 }
-
 
 
 void RcNode::handleMaxMinMessage(MaxMinMsg *msg){
@@ -178,16 +193,30 @@ void RcNode::handleMaxMinMessage(MaxMinMsg *msg){
 //        msgMap.insert(std::pair<int, MsgInfo>(msg->getMsgId(), newMsgInfo));
         msgMap[msg->getMsgId()] = newMsgInfo;
 
+        EV << "Node " << getIndex() << " serving as intermediate for msgId = " << newMsgInfo.msgId << "\n";
+        EV << "dstNodesRates map: \n";
+        printMapIntToFloat(dstNodesRates);
+        EV << "distFromNextMsg map: \n";
+        printMapIntToInt(distFromNextMsg);
+
         std::vector<int> rx;
         std::map<int, int>::iterator it;
         for (it = peerToGate.begin(); it != peerToGate.end(); it++){
             int dstIdx = it->first;
             if (dstIdx != config.LEADER_IDX) {
 //                EV << "Node " << getIndex() << " will forward msgID " << msg->getMsgId() << " to node " << dstIdx << "\n";
-                rx.push_back(dstIdx);
+                if (distFromNextMsg[dstIdx] == 1){
+                    EV << "Node " << getIndex() << " will forward msgID " << msg->getMsgId() << " to node " << dstIdx << "\n";
+                    rx.push_back(dstIdx);
+                    distFromNextMsg[dstIdx] = ceil(1.0 / dstNodesRates[dstIdx]);
+                }
+                else {
+                    distFromNextMsg[dstIdx] -- ;
+                }
+
             }
         }
-        broadcastMessage(msg, rx);
+        sendMessage(msg, rx);
         numRxAsInterm ++ ;
     }
     else {
@@ -198,11 +227,11 @@ void RcNode::handleMaxMinMessage(MaxMinMsg *msg){
     }
 }
 
-void RcNode::handleACKMessage(ACKMsg *ackMsg){
+void RcNode::handleMaxMinACK(MaxMinACK *ammmsg){
 
-    int peerGate = ackMsg->getArrivalGate()->getIndex();
+    int peerGate = ammmsg->getArrivalGate()->getIndex();
     int peerIdx = gateToPeer[peerGate];
-    int msgId = ackMsg->getMsgId();
+    int msgId = ammmsg->getMsgId();
     // Message arrived.
 //    EV << "Node " << getIndex() << " received ACK message for msgID " << msgId << " from node " << peerIdx << "\n";
 
@@ -223,8 +252,77 @@ void RcNode::handleACKMessage(ACKMsg *ackMsg){
             }
         }
     }
-
 }
+
+////////////////////////////// Probing Mechanism //////////////////////////////////////////////////////////
+
+void RcNode::handleProbeMsg(ProbeMsg *pmsg){
+    int peerGate = pmsg->getArrivalGate()->getIndex();
+    int peerIdx = gateToPeer[peerGate];
+//    EV << "Node " << getIndex() << " received probe msg from node with peerIdx = " << peerIdx << ", msg source = " << pmsg->getSource() << ", and msgId = " << pmsg->getMsgId() << "\n";
+    ProbeACK *probeACK = new ProbeACK();
+    probeACK->setMsgId(pmsg->getMsgId());
+    forwardMessage(probeACK, peerIdx);
+}
+
+// main AIMD functionality is supported by this method
+void RcNode::handleProbeMsgACK(ProbeACK *apmsg){
+    int peerGate = apmsg->getArrivalGate()->getIndex();
+    int peerIdx = gateToPeer[peerGate];
+    long msgId = apmsg->getMsgId();
+//    EV << "Node " << getIndex() << " received a Probe ACK from node " << peerIdx << "\n";
+
+    // todo: apply AIMD update
+
+    float currRate = dstNodesRates[peerIdx];
+    float newRate;
+    if (probeMsgMap[msgId].timeOut) newRate = std::max(aimdConfig.MinVal, aimdConfig.MultFactor * currRate);
+    else newRate = std::min(aimdConfig.MaxVal, currRate + aimdConfig.AddVal);
+    dstNodesRates[peerIdx] = newRate;
+//    distFromNextMsg[peerIdx] = ceil(1 / newRate);
+}
+
+void RcNode::handleProbeSelfTimer(ProbeSelfTimer *pstmsg){
+    long currProbeMsgId = pstmsg->getMsgId();
+    ProbeMsg *pmsg = new ProbeMsg();
+    pmsg->setMsgId(currProbeMsgId);
+    pmsg->setSource(getIndex());
+
+    ProbeMsgInfo newProbeMsgInfo;
+    newProbeMsgInfo.msgId = currProbeMsgId;
+    newProbeMsgInfo.timeOut = false;
+
+    std::map<int, int>::iterator it;
+    for (it = peerToGate.begin(); it != peerToGate.end(); it++){
+        int dstIdx = it->first;
+        ProbeMsg *pmsgCopy = pmsg->dup();
+        pmsgCopy->setDestination(dstIdx);
+        // send probe message directly to peer. No need to place probe message in outQueue ?
+        forwardMessage(pmsgCopy, dstIdx);
+    }
+    probeMsgMap[currProbeMsgId] = newProbeMsgInfo;
+
+    // todo: emit probe msg ack timeout which applies for ALL dst indices
+    ProbeAckTimeOut *probeAckTimeOut = new ProbeAckTimeOut();
+    probeAckTimeOut->setMsgId(currProbeMsgId);
+    scheduleAt(simTime() + aimdConfig.ProbeMsgTimeOut, probeAckTimeOut);
+
+    // emit new self timer for the next probe message
+    ProbeSelfTimer *newpstmsg = new ProbeSelfTimer();
+    float pmDuration = aimdConfig.ProbeMsgFreq;
+    newpstmsg->setMsgTimer(pstmsg->getMsgTimer() + pmDuration);
+    newpstmsg->setMsgId(pstmsg->getMsgId() + (GateSize + 1));
+    scheduleAt(newpstmsg->getMsgTimer(), newpstmsg);
+}
+
+void RcNode::handleProbeAckTimeOut(ProbeAckTimeOut *aptmsg){
+    int msgId = aptmsg->getMsgId();
+//    EV << "Node " << getIndex() << " received a self Probe ACK Timeout \n";
+    probeMsgMap.at(msgId).timeOut = true;
+}
+
+////////////////////////////// End of Probing Mechanism //////////////////////////////////////////////////////////
+
 
 void RcNode::handleACKTimeOutMessage(AckTimeOut *atmsg){
     int msgId = atmsg->getMsgId();
@@ -246,7 +344,8 @@ void RcNode::handleSelfTimerMessage(SelfTimer *stmsg){
     EV << "Utility scores: \n";
     printMapIntToFloat(uScores);
     std::vector<std::pair<int,float>> nodesRanked = sortMapByValue(uScores);
-    int intermNodeIdx = nodesRanked.back().first;
+//    int intermNodeIdx = nodesRanked.back().first;
+    int intermNodeIdx = 1;
     EV << "Next intermediate node: " << intermNodeIdx << "\n";
 
     newMsgInfo.intermediate = intermNodeIdx;
@@ -254,15 +353,13 @@ void RcNode::handleSelfTimerMessage(SelfTimer *stmsg){
 //    msgMap.insert(std::pair<int, MsgInfo>(currMsgId, newMsgInfo)); // this map is for internal bookkeeping (check if all acks received)
 //    EV << "msgMap at msgId: " << currMsgId << " has numAcksExp = " << msgMap[currMsgId].numAcksExp << "\n";
 
-//    int intermNodeIdx = 1;
-
     std::vector<int> rx;
     rx.push_back(intermNodeIdx);
-    broadcastMessage(mmmsg, rx);
+    sendMessage(mmmsg, rx);
 
     AckTimeOut *ackTimeOut = new AckTimeOut();
     ackTimeOut->setMsgId(currMsgId);
-    scheduleAt(simTime() + msgTimeOut, ackTimeOut);
+    scheduleAt(simTime() + config.ACKTimeoutDuration, ackTimeOut);
 
     currMsgId++;
 
@@ -274,9 +371,19 @@ void RcNode::handleSelfTimerMessage(SelfTimer *stmsg){
 
 void RcNode::handleInMessageTimer(InMsgTimer *intmsg){
     int inMsgId = intmsg->getMsgId();
-    MaxMinMsg *inmsg = inMsgMap.at(inMsgId);
+    int inMsgType = intmsg->getMsgType();
+    // msgType: MaxMinMsg = 0, ProbeMsg = 1
 
-    handleMaxMinMessage(inmsg);
+    if (inMsgType == config.MAXMIN_MSG_TYPE) {
+        MaxMinMsg *mmmsg = inMaxMinMsgMap[inMsgId];
+        handleMaxMinMessage(mmmsg);
+    }
+    else if (inMsgType == config.PROBE_MSG_TYPE) {
+        ProbeMsg *pmsg = inProbeMsgMap[inMsgId];
+        int peerIdx = gateToPeer[pmsg->getArrivalGate()->getIndex()];
+//        EV << "Node " << getIndex() << " received probe msg from node with peerIdx " << peerIdx << " and msg source " << pmsg->getSource() <<  "\n";
+        handleProbeMsg(pmsg);
+    }
 
     inQueueBusy = false;
     if (!inQueueBusy){
@@ -322,15 +429,40 @@ void RcNode::handleMessage(cMessage *msg){
             AckTimeOut *atmsg = check_and_cast<AckTimeOut *>(msg);
             handleACKTimeOutMessage(atmsg);
         }
+        else if(instanceof<ProbeSelfTimer>(msg)){
+            ProbeSelfTimer *pstmsg = check_and_cast<ProbeSelfTimer *>(msg);
+            handleProbeSelfTimer(pstmsg);
+        }
+        else if(instanceof<ProbeAckTimeOut>(msg)){
+            ProbeAckTimeOut *aptmsg = check_and_cast<ProbeAckTimeOut *>(msg);
+            handleProbeAckTimeOut(aptmsg);
+        }
+
     }
 
     // msg is not a self message
-    if(instanceof<MaxMinMsg>(msg)) {
-//        EV << "msg " << msg << " is of type MaxMinMsg \n";
-        MaxMinMsg *mmmsg = check_and_cast<MaxMinMsg *>(msg);
+    if(instanceof<MaxMinMsg>(msg) || instanceof<ProbeMsg>(msg)) {
+//        EV << "msg " << msg << " is of type MaxMinMsg or ProbeMsg \n";
+        int msgId;
+        int msgType;
+        if(instanceof<MaxMinMsg>(msg)) {
+            msgType = config.MAXMIN_MSG_TYPE;
+            MaxMinMsg *mmmsg = check_and_cast<MaxMinMsg*>(msg);
+            msgId = mmmsg->getMsgId();
+            inMaxMinMsgMap[msgId] = mmmsg->dup();
+        }
+        else if(instanceof<ProbeMsg>(msg)) {
+            msgType = config.PROBE_MSG_TYPE;
+            ProbeMsg *pmsg = check_and_cast<ProbeMsg*>(msg);
+            int peerIdx = gateToPeer[pmsg->getArrivalGate()->getIndex()];
+//            EV << "Node " << getIndex() << " received probe msg from node with peerIdx " << peerIdx << " and msg source " << pmsg->getSource() <<  "\n";
+            msgId = pmsg->getMsgId();
+            inProbeMsgMap[msgId] = pmsg->dup();
+        }
 
-        inMsgMap[mmmsg->getMsgId()] = mmmsg->dup(); // todo: should I duplicate the message here?
-        inQueue.push(mmmsg->getMsgId());
+        std::pair<int,int> pair = std::pair<int,int>(msgType,msgId);
+//        inMsgMap[pair] = msg->dup(); // todo: should I duplicate the message here?
+        inQueue.push(pair);
 
         if (!inQueueBusy){
             if (!inQueue.empty()){
@@ -338,12 +470,16 @@ void RcNode::handleMessage(cMessage *msg){
                 processNextInMsg();
             }
         }
-
     }
-    else if(instanceof<ACKMsg>(msg)) {
+    else if(instanceof<MaxMinACK>(msg)) {
 //        EV << "msg " << msg << " is of type ACKMsg \n";
-        ACKMsg *ackmsg = check_and_cast<ACKMsg *>(msg);
-        handleACKMessage(ackmsg);
+        MaxMinACK *ammmsg = check_and_cast<MaxMinACK *>(msg);
+        handleMaxMinACK(ammmsg);
+    }
+    else if(instanceof<ProbeACK>(msg)) {
+//        EV << "msg " << msg << " is of type ACKMsg \n";
+        ProbeACK *apmsg = check_and_cast<ProbeACK *>(msg);
+        handleProbeMsgACK(apmsg);
     }
 
 }
@@ -380,35 +516,45 @@ void RcNode::processNextOutMsg(){
 
 // assumes that inQueue is not empty
 void RcNode::processNextInMsg(){
-    int inMsgId = inQueue.front();
+    std::pair<int,int> pair = inQueue.front();
+    int inMsgType = pair.first;
+    int inMsgId = pair.second;
     InMsgTimer *intmsg = new InMsgTimer();
+    intmsg->setMsgType(inMsgType);
     intmsg->setMsgId(inMsgId);
-    float duration = config.MsgSize / bdInRate;
+    float duration;
+    if (inMsgType == config.MAXMIN_MSG_TYPE) duration = config.MsgSize / bdInRate;
+    else if (inMsgType == config.PROBE_MSG_TYPE) duration = aimdConfig.ProbeMsgSize / bdInRate;
     scheduleAt(simTime() + duration, intmsg);
     inQueue.pop();
 
 }
 
 // broadcast message to all receivers in rx array. If rx is empty, broadcast to all peers
-void RcNode::broadcastMessage(MaxMinMsg *msg, std::vector<int> rx){
-
-    if (rx.size() == 0) {
-        std::map<int, int>::iterator it;
-        for (it = peerToGate.begin(); it != peerToGate.end(); it++){
-            MaxMinMsg *copy = msg->dup();
-            int dstIdx = it->first;
-//            EV << "Node " << getIndex() << " forwarding message " << msg << " on gate[" << peerToGate[it->first] << "]\n";
-            copy->setDestination(dstIdx);
-            handleOutMsg(copy);
-        }
-
-    } else {
-        for (int dstIdx : rx){
-            MaxMinMsg *copy = msg->dup();
-            copy->setDestination(dstIdx);
-            handleOutMsg(copy);
-        }
+void RcNode::sendMessage(MaxMinMsg *msg, std::vector<int> rx){
+    for (int dstIdx : rx){
+        MaxMinMsg *copy = msg->dup();
+        copy->setDestination(dstIdx);
+        handleOutMsg(copy);
     }
+
+//    if (rx.size() == 0) {
+//        std::map<int, int>::iterator it;
+//        for (it = peerToGate.begin(); it != peerToGate.end(); it++){
+//            MaxMinMsg *copy = msg->dup();
+//            int dstIdx = it->first;
+////            EV << "Node " << getIndex() << " forwarding message " << msg << " on gate[" << peerToGate[it->first] << "]\n";
+//            copy->setDestination(dstIdx);
+//            handleOutMsg(copy);
+//        }
+//
+//    } else {
+//        for (int dstIdx : rx){
+//            MaxMinMsg *copy = msg->dup();
+//            copy->setDestination(dstIdx);
+//            handleOutMsg(copy);
+//        }
+//    }
 
 }
 
@@ -417,7 +563,7 @@ void RcNode::sendACK(MaxMinMsg *msg, int dstIdx){
     char msgname[20];
     sprintf(msgname, " ACK-max-min-msg-%d", msgId);
 
-    ACKMsg *ack = new ACKMsg(msgname);
+    MaxMinACK *ack = new MaxMinACK(msgname);
     int src = getIndex();  // our module index
     ack->setSource(src);
     ack->setMsgId(msgId);

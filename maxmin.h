@@ -9,6 +9,8 @@
 #include <map>
 #include <algorithm> // for sort function
 #include <queue>
+#include <cmath>
+#include <cstdlib>
 
 using namespace omnetpp;
 
@@ -31,22 +33,31 @@ class RcNode : public cSimpleModule {
         std::map<int, MsgInfo> msgMap;
         std::map<int, int> peerToGate, gateToPeer;
         Config config;
+        AIMDConfig aimdConfig;
 
         std::queue<std::pair<int,int>> outQueue;
         bool outQueueBusy = false;
 
-        std::queue<int> inQueue;
+        std::queue<std::pair<int,int>> inQueue;
         bool inQueueBusy = false;
 
-        std::map<int, MaxMinMsg*> inMsgMap;
+        // pair: (msgType, msgId)
+        // msgType: MaxMinMsg = 0, ProbeMsg = 1
+        std::map<int, MaxMinMsg*> inMaxMinMsgMap;
+        std::map<int, ProbeMsg*> inProbeMsgMap;
+        // pair: (msgId, dstIdx)
         std::map<std::pair<int,int>, MaxMinMsg*> outMsgMap;
 
-        float msgTimeOut;
-
-        // only for leader
+        // only for leader?
         std::map<int, float> uScores;
         int leastRxNode;
         int currMsgId = 0;
+
+        // only for followers?
+        std::map<int,float> dstNodesRates;
+        std::map<int,int> distFromNextMsg;
+        std::map<int,ProbeMsgInfo> probeMsgMap;
+
 
     protected:
         virtual MaxMinMsg* generateMessage(int dest);
@@ -55,24 +66,33 @@ class RcNode : public cSimpleModule {
         virtual void handleMessage(cMessage *msg) override;
 
         virtual void fillBookkeepingInfo();
+
         virtual void handleSelfTimerMessage(SelfTimer *tmsg);
         virtual void handleACKTimeOutMessage(AckTimeOut *atmsg);
         virtual void handleInMessageTimer(InMsgTimer *intmsg);
         virtual void handleOutMessageTimer(OutMsgTimer *outtmsg);
 
-
         virtual void handleMaxMinMessage(MaxMinMsg *mmmsg);
-        virtual void handleACKMessage(ACKMsg *amsg);
-        virtual void broadcastMessage(MaxMinMsg *msg, std::vector<int> rx);
+        virtual void handleMaxMinACK(MaxMinACK *ammmsg);
+        virtual void sendMessage(MaxMinMsg *msg, std::vector<int> rx);
         virtual void sendACK(MaxMinMsg *msg, int dstIdx);
-
-        virtual void updateUScores();
-        virtual int getLastMsgIdToCheck();
-        virtual std::pair<int,int> getMinRxNode(std::map<int, int> nodeToNumRx, int minRxNum);
 
         virtual void handleOutMsg(MaxMinMsg *msg);
         virtual void processNextOutMsg();
         virtual void processNextInMsg();
+
+        // only for leader?
+        virtual void updateUScores();
+        virtual int getLastMsgIdToCheck();
+        virtual std::pair<int,int> getMinRxNode(std::map<int, int> nodeToNumRx, int minRxNum);
+
+        // only for followers?
+        virtual void handleProbeMsg(ProbeMsg *pmsg);
+        virtual void handleProbeMsgACK(ProbeACK *apmsg);
+        virtual void handleProbeSelfTimer(ProbeSelfTimer *pstmsg);
+        virtual void handleProbeAckTimeOut(ProbeAckTimeOut *aptmsg);
+
+
 
     public:
         RcNode() {}

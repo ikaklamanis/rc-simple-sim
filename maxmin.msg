@@ -15,14 +15,26 @@ message MaxMinMsg
     int destination;
 }
 
-message ACKMsg
+message MaxMinACK
 {
     int msgId;
     int source;
     int destination;  
 }
 
-// only used as a self message
+message ProbeMsg
+{
+    long msgId;
+    int source;
+    int destination;
+}
+
+message ProbeACK
+{
+    long msgId;
+}
+
+// only used as self messages
 message SelfTimer
 {
     float msgTimer;
@@ -32,6 +44,8 @@ message InMsgTimer
 {
     float msgTimer;
     int msgId;
+    // msgType: MaxMinMsg = 0, ProbeMsg = 1
+    int msgType;
 }
 
 message OutMsgTimer
@@ -44,4 +58,15 @@ message OutMsgTimer
 message AckTimeOut
 {
     int msgId;
+}
+
+message ProbeSelfTimer
+{
+	float msgTimer;
+	long msgId;
+}
+
+message ProbeAckTimeOut
+{
+    long msgId;
 }
