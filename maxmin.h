@@ -9,6 +9,7 @@
 #include <map>
 #include <algorithm> // for sort function
 #include <queue>
+#include <deque>
 #include <cmath>
 #include <cstdlib>
 
@@ -23,30 +24,48 @@ using namespace omnetpp;
 
 class RcNode : public cSimpleModule {
     private:
+        simsignal_t numRxSignal;
+
+        simsignal_t numRxAsIntermSignal;
+
+        simsignal_t uScore1Signal;
+        simsignal_t uScore2Signal;
+        simsignal_t uScore3Signal;
+
+        simsignal_t intermNodeSignal;
+
+        simsignal_t numDrOutQSignal;
+        simsignal_t numDrInQSignal;
+
+        simsignal_t outQSizeSignal;
+        simsignal_t inQSizeSignal;
+
+        simsignal_t rate1Signal;
+        simsignal_t rate2Signal;
+
+
         long numReceived = 0;
-        long numRxAsInterm = 0;
+        long numReceivedAsInterm = 0;
 
         float bdInRate;
         float bdOutRate;
 
         int GateSize;
-        std::map<int, MsgInfo> msgMap;
+        std::map<int, MaxMinMsgInfo> msgMap;
         std::map<int, int> peerToGate, gateToPeer;
         Config config;
         AIMDConfig aimdConfig;
 
-        std::queue<std::pair<int,int>> outQueue;
+        std::queue<int> outQueue;
         bool outQueueBusy = false;
 
-        std::queue<std::pair<int,int>> inQueue;
+        std::queue<int> inQueue;
         bool inQueueBusy = false;
 
-        // pair: (msgType, msgId)
         // msgType: MaxMinMsg = 0, ProbeMsg = 1
-        std::map<int, MaxMinMsg*> inMaxMinMsgMap;
-        std::map<int, ProbeMsg*> inProbeMsgMap;
-        // pair: (msgId, dstIdx)
-        std::map<std::pair<int,int>, MaxMinMsg*> outMsgMap;
+
+        std::map<int, cMessage*> inMsgMap;
+        std::map<int, RCMessage*> outMsgMap;
 
         // only for leader?
         std::map<int, float> uScores;
@@ -54,8 +73,8 @@ class RcNode : public cSimpleModule {
         int currMsgId = 0;
 
         // only for followers?
-        std::map<int,float> dstNodesRates;
-        std::map<int,int> distFromNextMsg;
+        std::map<int,float> rates;
+        std::map<int,float> tokenBuckets;
         std::map<int,ProbeMsgInfo> probeMsgMap;
 
 
@@ -74,10 +93,10 @@ class RcNode : public cSimpleModule {
 
         virtual void handleMaxMinMessage(MaxMinMsg *mmmsg);
         virtual void handleMaxMinACK(MaxMinACK *ammmsg);
-        virtual void sendMessage(MaxMinMsg *msg, std::vector<int> rx);
+//        virtual void sendMessage(cMessage *msg, std::vector<int> rx);
         virtual void sendACK(MaxMinMsg *msg, int dstIdx);
 
-        virtual void handleOutMsg(MaxMinMsg *msg);
+        virtual void handleOutMsg(RCMessage *msg);
         virtual void processNextOutMsg();
         virtual void processNextInMsg();
 

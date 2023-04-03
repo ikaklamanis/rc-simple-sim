@@ -8,12 +8,14 @@
 // `license' for details on this and other legal matters.
 //
 
-message MaxMinMsg
+message RCMessage
 {
     int msgId;
     int source;
     int destination;
 }
+
+message MaxMinMsg extends RCMessage {}
 
 message MaxMinACK
 {
@@ -22,12 +24,7 @@ message MaxMinACK
     int destination;  
 }
 
-message ProbeMsg
-{
-    long msgId;
-    int source;
-    int destination;
-}
+message ProbeMsg extends RCMessage {}
 
 message ProbeACK
 {
@@ -35,6 +32,12 @@ message ProbeACK
 }
 
 // only used as self messages
+
+message RCSelfMessage
+{
+    float msgId;
+}
+
 message SelfTimer
 {
     float msgTimer;
@@ -44,8 +47,6 @@ message InMsgTimer
 {
     float msgTimer;
     int msgId;
-    // msgType: MaxMinMsg = 0, ProbeMsg = 1
-    int msgType;
 }
 
 message OutMsgTimer

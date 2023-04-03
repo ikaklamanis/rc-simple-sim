@@ -39,6 +39,18 @@ void printMapIntToFloat(std::map<int, float> myMap){
     EV << "\n";
 }
 
+//void printMapIntToIntArray(std::map<int, int[]> myMap){
+//    for(const auto& elem : myMap)
+//    {
+//       EV << elem.first << ": {";
+//       for (int id : elem.second){
+//           EV << id << ", ";
+//       }
+//       EV << "} \n";
+//    }
+//    EV << "\n";
+//}
+
 void printMapPairIntIntToMaxMinMsg(std::map<std::pair<int,int>, MaxMinMsg*> myMap){
     for(auto& elem : myMap)
     {
