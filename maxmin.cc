@@ -63,7 +63,7 @@ void RcNode::initialize(){
         float pmInterval = aimdConfig.ProbeMsgFreq;
         pstmsg->setMsgTimer(pmInterval);
         pstmsg->setMsgId(0);
-        scheduleAt(pstmsg->getMsgTimer(), pstmsg);
+//        scheduleAt(pstmsg->getMsgTimer(), pstmsg);
 
         numRxAsIntermSignal = registerSignal("numRxAsIntermSignal");
         rate1Signal = registerSignal("rate1Signal");
@@ -94,6 +94,10 @@ void RcNode::fillBookkeepingInfo(){
             uScores[peerIndex] = config.InitUtilScore;
             rates[peerIndex] = aimdConfig.InitVal;
             tokenBuckets[peerIndex] = aimdConfig.InitVal;
+
+            std::vector<int> msgIds;
+            nodeToMsgsAcked[peerIndex] = msgIds;
+            nodeToAIMDStatus[peerIndex] = CAN_DECREASE; // can apply MD update to this node iff true
         }
     }
 }
@@ -228,6 +232,7 @@ void RcNode::handleMaxMinMessage(MaxMinMsg *msg){
         printMapIntToFloat(tokenBuckets);
 
 //        std::vector<int> rx;
+//        std::map<int, int>::reverse_iterator it;
         std::map<int, int>::iterator it;
         for (it = peerToGate.begin(); it != peerToGate.end(); it++){
             int dstIdx = it->first;
@@ -264,21 +269,51 @@ void RcNode::handleMaxMinACK(MaxMinACK *ammmsg){
     // Message arrived.
 //    EV << "Node " << getIndex() << " received ACK message for msgID " << msgId << " from node " << peerIdx << "\n";
 
-    // if msgId exists as key in msgMap
-    if (msgMap.count(msgId)){
-        if (msgMap[msgId].timeOut){
-            EV_WARN << "ACK TIMEOUT: Node " << getIndex() << " received ACK after timeout for msgID " << msgId << "\n";
-        }
-        else{
-            msgMap[msgId].receivers.insert(peerIdx);
-            // check if have received all ACKS
-//            EV << "Node " << getIndex() << " msgMap[msgId].receivers.size() = " << msgMap[msgId].receivers.size() << "\n";
-//            EV << "Node " << getIndex() << " numAcksExp = " << msgMap[msgId].numAcksExp << "\n";
-            if (msgMap[msgId].receivers.size() == msgMap[msgId].numAcksExp){
-                EV << "Node " << getIndex() << " received all ACKS for msgID " << msgId << "\n";
+    if (getIndex() != config.LEADER_IDX){
+        if (!nodeToMsgsAcked[peerIdx].empty()) {
+            int lastMsgIdAcked = nodeToMsgsAcked[peerIdx].back();
+            // check if there is a gap in acknowledged messages
+            int updateType = NO_UPDATE;
+            if (msgId > lastMsgIdAcked + 1){
+                EV_WARN << "ACK TIMEOUT: Node " << getIndex() << " received non-consecutive ACK from node " << peerIdx << " for msgID " << msgId << "\n";
+                // TODO: reduce rate to this peer (if this is not the leader?)
+                if (nodeToAIMDStatus[peerIdx] == CAN_DECREASE) {
+                    EV_WARN << "Mult Decrease: Node " << getIndex() << " will apply MD rate decrease to node " << peerIdx << "\n";
+                    updateType = DECREASE;
+                    nodeToAIMDStatus[peerIdx] = NO_DECREASE;
+
+                    AIMDTimer *aimdtmsg = new AIMDTimer();
+                    aimdtmsg->setPeerIdx(peerIdx);
+                    aimdtmsg->setMsgId(msgId);
+                    scheduleAt(simTime() + aimdConfig.MDInterval, aimdtmsg);
+                }
             }
+            else {
+                // TODO: should we apply Add Increase every time we receive ACKS for consecutive msgIds?
+                updateType = INCREASE;
+            }
+            applyAIMDUpdate(peerIdx, updateType);
         }
     }
+//    // TODO: should we check for any timeout before adding (msgId, peerIdx) in our records?s
+    msgMap[msgId].receivers.insert(peerIdx);
+    nodeToMsgsAcked[peerIdx].push_back(msgId);
+//
+//    // if msgId exists as key in msgMap
+//    if (msgMap.count(msgId)){
+//        if (msgMap[msgId].timeOut){
+//            EV_WARN << "ACK TIMEOUT: Node " << getIndex() << " received ACK after timeout for msgID " << msgId << "\n";
+//        }
+//        else{
+//            msgMap[msgId].receivers.insert(peerIdx);
+//            // check if have received all ACKS
+////            EV << "Node " << getIndex() << " msgMap[msgId].receivers.size() = " << msgMap[msgId].receivers.size() << "\n";
+////            EV << "Node " << getIndex() << " numAcksExp = " << msgMap[msgId].numAcksExp << "\n";
+//            if (msgMap[msgId].receivers.size() == msgMap[msgId].numAcksExp){
+//                EV << "Node " << getIndex() << " received all ACKS for msgID " << msgId << "\n";
+//            }
+//        }
+//    }
 }
 
 ////////////////////////////// Probing Mechanism //////////////////////////////////////////////////////////
@@ -299,13 +334,23 @@ void RcNode::handleProbeMsgACK(ProbeACK *apmsg){
     long msgId = apmsg->getMsgId();
 //    EV << "Node " << getIndex() << " received a Probe ACK from node " << peerIdx << "\n";
 
+    int updateType;
+    if (probeMsgMap[msgId].timeOut) updateType = DECREASE;
+    else updateType = INCREASE;
+
+    applyAIMDUpdate(peerIdx, updateType);
+}
+
+
+void RcNode::applyAIMDUpdate(int peerIdx, int updateType){
     // DONE: apply AIMD update
+    if (updateType == NO_UPDATE) return;
+
     float currRate = rates[peerIdx];
-    float newRate;
-    //todo: uncomment MD line
-    if (probeMsgMap[msgId].timeOut) newRate = std::max(aimdConfig.MinVal, aimdConfig.MultFactor * currRate);
+    float newRate = currRate;
+    if (updateType == DECREASE) newRate = std::max(aimdConfig.MinVal, aimdConfig.MultFactor * currRate);
 //    if (probeMsgMap[msgId].timeOut) newRate = currRate;
-    else newRate = std::min(aimdConfig.MaxVal, currRate + aimdConfig.AddVal);
+    else if (updateType == INCREASE) newRate = std::min(aimdConfig.MaxVal, currRate + aimdConfig.AddVal);
     rates[peerIdx] = newRate;
 
     std::map<int, int>::iterator it;
@@ -320,7 +365,13 @@ void RcNode::handleProbeMsgACK(ProbeACK *apmsg){
     }
     emit(rate1Signal, rateValues[0]);
     emit(rate2Signal, rateValues[1]);
+}
 
+void RcNode::handleAIMDTimer(AIMDTimer *aimdtmsg){
+    int peerIdx = aimdtmsg->getPeerIdx();
+    int msgId = aimdtmsg->getMsgId();
+
+    nodeToAIMDStatus[peerIdx] = CAN_DECREASE;
 }
 
 void RcNode::handleProbeSelfTimer(ProbeSelfTimer *pstmsg){
@@ -405,6 +456,7 @@ void RcNode::handleSelfTimerMessage(SelfTimer *stmsg){
     mmmsg->setDestination(intermNodeIdx);
     newMMMsgInfo.intermediate = intermNodeIdx;
     EV << "Next intermediate node: " << mmmsg->getDestination() << "\n";
+
     msgMap[currMsgId] = newMMMsgInfo;
 
     handleOutMsg(mmmsg);
@@ -488,6 +540,10 @@ void RcNode::handleMessage(cMessage *msg){
         else if(instanceof<ProbeAckTimeOut>(msg)){
             ProbeAckTimeOut *aptmsg = check_and_cast<ProbeAckTimeOut *>(msg);
             handleProbeAckTimeOut(aptmsg);
+        }
+        else if(instanceof<AIMDTimer>(msg)){
+            AIMDTimer *aimdtmsg = check_and_cast<AIMDTimer *>(msg);
+            handleAIMDTimer(aimdtmsg);
         }
 
     }
@@ -591,15 +647,6 @@ void RcNode::processNextInMsg(){
     inQueue.pop();
 
 }
-
-//// send message to all receivers in rx array.
-//void RcNode::sendMessage(cMessage *msg, std::vector<int> rx){
-//    for (int dstIdx : rx){
-//        cMessage *copy = msg->dup();
-////        copy->setDestination(dstIdx);
-//        handleOutMsg(copy, dstIdx);
-//    }
-//}
 
 void RcNode::sendACK(MaxMinMsg *msg, int dstIdx){
     int msgId = msg->getMsgId();

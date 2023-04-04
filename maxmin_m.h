@@ -28,6 +28,7 @@ class OutMsgTimer;
 class AckTimeOut;
 class ProbeSelfTimer;
 class ProbeAckTimeOut;
+class AIMDTimer;
 /**
  * Class generated from <tt>maxmin.msg:12</tt> by opp_msgtool.
  * <pre>
@@ -492,6 +493,52 @@ class ProbeAckTimeOut : public ::omnetpp::cMessage
 inline void doParsimPacking(omnetpp::cCommBuffer *b, const ProbeAckTimeOut& obj) {obj.parsimPack(b);}
 inline void doParsimUnpacking(omnetpp::cCommBuffer *b, ProbeAckTimeOut& obj) {obj.parsimUnpack(b);}
 
+/**
+ * Class generated from <tt>maxmin.msg:76</tt> by opp_msgtool.
+ * <pre>
+ * message AIMDTimer
+ * {
+ *     float msgTimer;
+ *     int msgId;
+ *     int peerIdx;
+ * }
+ * </pre>
+ */
+class AIMDTimer : public ::omnetpp::cMessage
+{
+  protected:
+    float msgTimer = 0;
+    int msgId = 0;
+    int peerIdx = 0;
+
+  private:
+    void copy(const AIMDTimer& other);
+
+  protected:
+    bool operator==(const AIMDTimer&) = delete;
+
+  public:
+    AIMDTimer(const char *name=nullptr, short kind=0);
+    AIMDTimer(const AIMDTimer& other);
+    virtual ~AIMDTimer();
+    AIMDTimer& operator=(const AIMDTimer& other);
+    virtual AIMDTimer *dup() const override {return new AIMDTimer(*this);}
+    virtual void parsimPack(omnetpp::cCommBuffer *b) const override;
+    virtual void parsimUnpack(omnetpp::cCommBuffer *b) override;
+
+    virtual float getMsgTimer() const;
+    virtual void setMsgTimer(float msgTimer);
+
+    virtual int getMsgId() const;
+    virtual void setMsgId(int msgId);
+
+    virtual int getPeerIdx() const;
+    virtual void setPeerIdx(int peerIdx);
+};
+
+inline void doParsimPacking(omnetpp::cCommBuffer *b, const AIMDTimer& obj) {obj.parsimPack(b);}
+inline void doParsimUnpacking(omnetpp::cCommBuffer *b, AIMDTimer& obj) {obj.parsimUnpack(b);}
+
 
 namespace omnetpp {
 
@@ -507,6 +554,7 @@ template<> inline OutMsgTimer *fromAnyPtr(any_ptr ptr) { return check_and_cast<O
 template<> inline AckTimeOut *fromAnyPtr(any_ptr ptr) { return check_and_cast<AckTimeOut*>(ptr.get<cObject>()); }
 template<> inline ProbeSelfTimer *fromAnyPtr(any_ptr ptr) { return check_and_cast<ProbeSelfTimer*>(ptr.get<cObject>()); }
 template<> inline ProbeAckTimeOut *fromAnyPtr(any_ptr ptr) { return check_and_cast<ProbeAckTimeOut*>(ptr.get<cObject>()); }
+template<> inline AIMDTimer *fromAnyPtr(any_ptr ptr) { return check_and_cast<AIMDTimer*>(ptr.get<cObject>()); }
 
 }  // namespace omnetpp
 

@@ -71,3 +71,10 @@ message ProbeAckTimeOut
 {
     long msgId;
 }
+
+message AIMDTimer
+{
+    float msgTimer;
+    int msgId;
+    int peerIdx;
+}

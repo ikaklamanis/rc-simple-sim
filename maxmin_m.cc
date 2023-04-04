@@ -4488,6 +4488,402 @@ void ProbeAckTimeOutDescriptor::setFieldStructValuePointer(omnetpp::any_ptr obje
     }
 }
 
+Register_Class(AIMDTimer)
+
+AIMDTimer::AIMDTimer(const char *name, short kind) : ::omnetpp::cMessage(name, kind)
+{
+}
+
+AIMDTimer::AIMDTimer(const AIMDTimer& other) : ::omnetpp::cMessage(other)
+{
+    copy(other);
+}
+
+AIMDTimer::~AIMDTimer()
+{
+}
+
+AIMDTimer& AIMDTimer::operator=(const AIMDTimer& other)
+{
+    if (this == &other) return *this;
+    ::omnetpp::cMessage::operator=(other);
+    copy(other);
+    return *this;
+}
+
+void AIMDTimer::copy(const AIMDTimer& other)
+{
+    this->msgTimer = other.msgTimer;
+    this->msgId = other.msgId;
+    this->peerIdx = other.peerIdx;
+}
+
+void AIMDTimer::parsimPack(omnetpp::cCommBuffer *b) const
+{
+    ::omnetpp::cMessage::parsimPack(b);
+    doParsimPacking(b,this->msgTimer);
+    doParsimPacking(b,this->msgId);
+    doParsimPacking(b,this->peerIdx);
+}
+
+void AIMDTimer::parsimUnpack(omnetpp::cCommBuffer *b)
+{
+    ::omnetpp::cMessage::parsimUnpack(b);
+    doParsimUnpacking(b,this->msgTimer);
+    doParsimUnpacking(b,this->msgId);
+    doParsimUnpacking(b,this->peerIdx);
+}
+
+float AIMDTimer::getMsgTimer() const
+{
+    return this->msgTimer;
+}
+
+void AIMDTimer::setMsgTimer(float msgTimer)
+{
+    this->msgTimer = msgTimer;
+}
+
+int AIMDTimer::getMsgId() const
+{
+    return this->msgId;
+}
+
+void AIMDTimer::setMsgId(int msgId)
+{
+    this->msgId = msgId;
+}
+
+int AIMDTimer::getPeerIdx() const
+{
+    return this->peerIdx;
+}
+
+void AIMDTimer::setPeerIdx(int peerIdx)
+{
+    this->peerIdx = peerIdx;
+}
+
+class AIMDTimerDescriptor : public omnetpp::cClassDescriptor
+{
+  private:
+    mutable const char **propertyNames;
+    enum FieldConstants {
+        FIELD_msgTimer,
+        FIELD_msgId,
+        FIELD_peerIdx,
+    };
+  public:
+    AIMDTimerDescriptor();
+    virtual ~AIMDTimerDescriptor();
+
+    virtual bool doesSupport(omnetpp::cObject *obj) const override;
+    virtual const char **getPropertyNames() const override;
+    virtual const char *getProperty(const char *propertyName) const override;
+    virtual int getFieldCount() const override;
+    virtual const char *getFieldName(int field) const override;
+    virtual int findField(const char *fieldName) const override;
+    virtual unsigned int getFieldTypeFlags(int field) const override;
+    virtual const char *getFieldTypeString(int field) const override;
+    virtual const char **getFieldPropertyNames(int field) const override;
+    virtual const char *getFieldProperty(int field, const char *propertyName) const override;
+    virtual int getFieldArraySize(omnetpp::any_ptr object, int field) const override;
+    virtual void setFieldArraySize(omnetpp::any_ptr object, int field, int size) const override;
+
+    virtual const char *getFieldDynamicTypeString(omnetpp::any_ptr object, int field, int i) const override;
+    virtual std::string getFieldValueAsString(omnetpp::any_ptr object, int field, int i) const override;
+    virtual void setFieldValueAsString(omnetpp::any_ptr object, int field, int i, const char *value) const override;
+    virtual omnetpp::cValue getFieldValue(omnetpp::any_ptr object, int field, int i) const override;
+    virtual void setFieldValue(omnetpp::any_ptr object, int field, int i, const omnetpp::cValue& value) const override;
+
+    virtual const char *getFieldStructName(int field) const override;
+    virtual omnetpp::any_ptr getFieldStructValuePointer(omnetpp::any_ptr object, int field, int i) const override;
+    virtual void setFieldStructValuePointer(omnetpp::any_ptr object, int field, int i, omnetpp::any_ptr ptr) const override;
+};
+
+Register_ClassDescriptor(AIMDTimerDescriptor)
+
+AIMDTimerDescriptor::AIMDTimerDescriptor() : omnetpp::cClassDescriptor(omnetpp::opp_typename(typeid(AIMDTimer)), "omnetpp::cMessage")
+{
+    propertyNames = nullptr;
+}
+
+AIMDTimerDescriptor::~AIMDTimerDescriptor()
+{
+    delete[] propertyNames;
+}
+
+bool AIMDTimerDescriptor::doesSupport(omnetpp::cObject *obj) const
+{
+    return dynamic_cast<AIMDTimer *>(obj)!=nullptr;
+}
+
+const char **AIMDTimerDescriptor::getPropertyNames() const
+{
+    if (!propertyNames) {
+        static const char *names[] = {  nullptr };
+        omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+        const char **baseNames = base ? base->getPropertyNames() : nullptr;
+        propertyNames = mergeLists(baseNames, names);
+    }
+    return propertyNames;
+}
+
+const char *AIMDTimerDescriptor::getProperty(const char *propertyName) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    return base ? base->getProperty(propertyName) : nullptr;
+}
+
+int AIMDTimerDescriptor::getFieldCount() const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    return base ? 3+base->getFieldCount() : 3;
+}
+
+unsigned int AIMDTimerDescriptor::getFieldTypeFlags(int field) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldTypeFlags(field);
+        field -= base->getFieldCount();
+    }
+    static unsigned int fieldTypeFlags[] = {
+        FD_ISEDITABLE,    // FIELD_msgTimer
+        FD_ISEDITABLE,    // FIELD_msgId
+        FD_ISEDITABLE,    // FIELD_peerIdx
+    };
+    return (field >= 0 && field < 3) ? fieldTypeFlags[field] : 0;
+}
+
+const char *AIMDTimerDescriptor::getFieldName(int field) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldName(field);
+        field -= base->getFieldCount();
+    }
+    static const char *fieldNames[] = {
+        "msgTimer",
+        "msgId",
+        "peerIdx",
+    };
+    return (field >= 0 && field < 3) ? fieldNames[field] : nullptr;
+}
+
+int AIMDTimerDescriptor::findField(const char *fieldName) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    int baseIndex = base ? base->getFieldCount() : 0;
+    if (strcmp(fieldName, "msgTimer") == 0) return baseIndex + 0;
+    if (strcmp(fieldName, "msgId") == 0) return baseIndex + 1;
+    if (strcmp(fieldName, "peerIdx") == 0) return baseIndex + 2;
+    return base ? base->findField(fieldName) : -1;
+}
+
+const char *AIMDTimerDescriptor::getFieldTypeString(int field) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldTypeString(field);
+        field -= base->getFieldCount();
+    }
+    static const char *fieldTypeStrings[] = {
+        "float",    // FIELD_msgTimer
+        "int",    // FIELD_msgId
+        "int",    // FIELD_peerIdx
+    };
+    return (field >= 0 && field < 3) ? fieldTypeStrings[field] : nullptr;
+}
+
+const char **AIMDTimerDescriptor::getFieldPropertyNames(int field) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldPropertyNames(field);
+        field -= base->getFieldCount();
+    }
+    switch (field) {
+        default: return nullptr;
+    }
+}
+
+const char *AIMDTimerDescriptor::getFieldProperty(int field, const char *propertyName) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldProperty(field, propertyName);
+        field -= base->getFieldCount();
+    }
+    switch (field) {
+        default: return nullptr;
+    }
+}
+
+int AIMDTimerDescriptor::getFieldArraySize(omnetpp::any_ptr object, int field) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldArraySize(object, field);
+        field -= base->getFieldCount();
+    }
+    AIMDTimer *pp = omnetpp::fromAnyPtr<AIMDTimer>(object); (void)pp;
+    switch (field) {
+        default: return 0;
+    }
+}
+
+void AIMDTimerDescriptor::setFieldArraySize(omnetpp::any_ptr object, int field, int size) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount()){
+            base->setFieldArraySize(object, field, size);
+            return;
+        }
+        field -= base->getFieldCount();
+    }
+    AIMDTimer *pp = omnetpp::fromAnyPtr<AIMDTimer>(object); (void)pp;
+    switch (field) {
+        default: throw omnetpp::cRuntimeError("Cannot set array size of field %d of class 'AIMDTimer'", field);
+    }
+}
+
+const char *AIMDTimerDescriptor::getFieldDynamicTypeString(omnetpp::any_ptr object, int field, int i) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldDynamicTypeString(object,field,i);
+        field -= base->getFieldCount();
+    }
+    AIMDTimer *pp = omnetpp::fromAnyPtr<AIMDTimer>(object); (void)pp;
+    switch (field) {
+        default: return nullptr;
+    }
+}
+
+std::string AIMDTimerDescriptor::getFieldValueAsString(omnetpp::any_ptr object, int field, int i) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldValueAsString(object,field,i);
+        field -= base->getFieldCount();
+    }
+    AIMDTimer *pp = omnetpp::fromAnyPtr<AIMDTimer>(object); (void)pp;
+    switch (field) {
+        case FIELD_msgTimer: return double2string(pp->getMsgTimer());
+        case FIELD_msgId: return long2string(pp->getMsgId());
+        case FIELD_peerIdx: return long2string(pp->getPeerIdx());
+        default: return "";
+    }
+}
+
+void AIMDTimerDescriptor::setFieldValueAsString(omnetpp::any_ptr object, int field, int i, const char *value) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount()){
+            base->setFieldValueAsString(object, field, i, value);
+            return;
+        }
+        field -= base->getFieldCount();
+    }
+    AIMDTimer *pp = omnetpp::fromAnyPtr<AIMDTimer>(object); (void)pp;
+    switch (field) {
+        case FIELD_msgTimer: pp->setMsgTimer(string2double(value)); break;
+        case FIELD_msgId: pp->setMsgId(string2long(value)); break;
+        case FIELD_peerIdx: pp->setPeerIdx(string2long(value)); break;
+        default: throw omnetpp::cRuntimeError("Cannot set field %d of class 'AIMDTimer'", field);
+    }
+}
+
+omnetpp::cValue AIMDTimerDescriptor::getFieldValue(omnetpp::any_ptr object, int field, int i) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldValue(object,field,i);
+        field -= base->getFieldCount();
+    }
+    AIMDTimer *pp = omnetpp::fromAnyPtr<AIMDTimer>(object); (void)pp;
+    switch (field) {
+        case FIELD_msgTimer: return (double)(pp->getMsgTimer());
+        case FIELD_msgId: return pp->getMsgId();
+        case FIELD_peerIdx: return pp->getPeerIdx();
+        default: throw omnetpp::cRuntimeError("Cannot return field %d of class 'AIMDTimer' as cValue -- field index out of range?", field);
+    }
+}
+
+void AIMDTimerDescriptor::setFieldValue(omnetpp::any_ptr object, int field, int i, const omnetpp::cValue& value) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount()){
+            base->setFieldValue(object, field, i, value);
+            return;
+        }
+        field -= base->getFieldCount();
+    }
+    AIMDTimer *pp = omnetpp::fromAnyPtr<AIMDTimer>(object); (void)pp;
+    switch (field) {
+        case FIELD_msgTimer: pp->setMsgTimer(static_cast<float>(value.doubleValue())); break;
+        case FIELD_msgId: pp->setMsgId(omnetpp::checked_int_cast<int>(value.intValue())); break;
+        case FIELD_peerIdx: pp->setPeerIdx(omnetpp::checked_int_cast<int>(value.intValue())); break;
+        default: throw omnetpp::cRuntimeError("Cannot set field %d of class 'AIMDTimer'", field);
+    }
+}
+
+const char *AIMDTimerDescriptor::getFieldStructName(int field) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldStructName(field);
+        field -= base->getFieldCount();
+    }
+    switch (field) {
+        default: return nullptr;
+    };
+}
+
+omnetpp::any_ptr AIMDTimerDescriptor::getFieldStructValuePointer(omnetpp::any_ptr object, int field, int i) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldStructValuePointer(object, field, i);
+        field -= base->getFieldCount();
+    }
+    AIMDTimer *pp = omnetpp::fromAnyPtr<AIMDTimer>(object); (void)pp;
+    switch (field) {
+        default: return omnetpp::any_ptr(nullptr);
+    }
+}
+
+void AIMDTimerDescriptor::setFieldStructValuePointer(omnetpp::any_ptr object, int field, int i, omnetpp::any_ptr ptr) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount()){
+            base->setFieldStructValuePointer(object, field, i, ptr);
+            return;
+        }
+        field -= base->getFieldCount();
+    }
+    AIMDTimer *pp = omnetpp::fromAnyPtr<AIMDTimer>(object); (void)pp;
+    switch (field) {
+        default: throw omnetpp::cRuntimeError("Cannot set field %d of class 'AIMDTimer'", field);
+    }
+}
+
 namespace omnetpp {
 
 }  // namespace omnetpp

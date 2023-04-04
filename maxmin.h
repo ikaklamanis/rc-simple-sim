@@ -56,6 +56,9 @@ class RcNode : public cSimpleModule {
         Config config;
         AIMDConfig aimdConfig;
 
+        std::map<int, std::vector<int>> nodeToMsgsAcked;
+        std::map<int, int> nodeToAIMDStatus;
+
         std::queue<int> outQueue;
         bool outQueueBusy = false;
 
@@ -110,6 +113,9 @@ class RcNode : public cSimpleModule {
         virtual void handleProbeMsgACK(ProbeACK *apmsg);
         virtual void handleProbeSelfTimer(ProbeSelfTimer *pstmsg);
         virtual void handleProbeAckTimeOut(ProbeAckTimeOut *aptmsg);
+        virtual void handleAIMDTimer(AIMDTimer *aimdtmsg);
+
+        virtual void applyAIMDUpdate(int peerIdx, int updateType);
 
 
 
