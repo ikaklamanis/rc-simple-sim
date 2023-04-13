@@ -15,13 +15,15 @@ message RCMessage
     int destination;
 }
 
-message MaxMinMsg extends RCMessage {}
+message MaxMinMsg extends RCMessage 
+{
+}
 
 message MaxMinACK
 {
     int msgId;
     int source;
-    int destination;  
+    int destination; 
 }
 
 message ProbeMsg extends RCMessage {}

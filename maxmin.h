@@ -12,6 +12,7 @@
 #include <deque>
 #include <cmath>
 #include <cstdlib>
+#include <numeric>
 
 using namespace omnetpp;
 
@@ -20,6 +21,7 @@ using namespace omnetpp;
 // cMessage.
 #include "maxmin_m.h"
 #include "utils.h"
+#include "schedule.h"
 
 
 class RcNode : public cSimpleModule {
@@ -72,13 +74,15 @@ class RcNode : public cSimpleModule {
 
         // only for leader?
         std::map<int, float> uScores;
-        int leastRxNode;
+//        int minRxNode;
         int currMsgId = 0;
+        std::map<int,int> leaderSchedule; // TODO: define length
 
         // only for followers?
         std::map<int,float> rates;
         std::map<int,float> tokenBuckets;
         std::map<int,ProbeMsgInfo> probeMsgMap;
+        int intermSeqNum;
 
 
     protected:
@@ -106,7 +110,8 @@ class RcNode : public cSimpleModule {
         // only for leader?
         virtual void updateUScores();
         virtual int getLastMsgIdToCheck();
-        virtual std::pair<int,int> getMinRxNode(std::map<int, int> nodeToNumRx, int minRxNum);
+        virtual std::pair<int,int> getMinRxNode();
+        virtual void updateLeaderSchedule();
 
         // only for followers?
         virtual void handleProbeMsg(ProbeMsg *pmsg);

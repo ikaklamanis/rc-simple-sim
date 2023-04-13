@@ -56,6 +56,8 @@ void RcNode::initialize(){
         uScore3Signal = registerSignal("uScore3Signal");
 
         intermNodeSignal = registerSignal("intermNodeSignal");
+
+//        minRxNode = 1;
     }
     else {
         // schedule first probe msg
@@ -69,6 +71,8 @@ void RcNode::initialize(){
         rate1Signal = registerSignal("rate1Signal");
         rate2Signal = registerSignal("rate2Signal");
 
+        intermSeqNum = 0;
+
     }
 
     outQSizeSignal = registerSignal("outQSizeSignal");
@@ -80,6 +84,7 @@ void RcNode::initialize(){
     numDrInQSignal = registerSignal("numDrInQSignal");
 
 }
+
 
 void RcNode::fillBookkeepingInfo(){
     GateSize = gateSize("gate");
@@ -112,10 +117,43 @@ int RcNode::getLastMsgIdToCheck(){
     return -1;
 }
 
-std::pair<int,int> RcNode::getMinRxNode(std::map<int, int> numRx, int minRxNumInit){
-    int minRxNum = minRxNumInit;
-    int minRxNodeIdx = 1;
+//std::map<int, int> numRx, int minRxNumInit
+std::pair<int,int> RcNode::getMinRxNode(){
+
+    int lastMsgId = getLastMsgIdToCheck();
+    int firstMsgId = std::max(0, lastMsgId - config.TotalMsgsToCheck + 1);
+//    int lastMsgId = currMsgId - config.DistFromCurrMsgId;
+
+    EV << "firstMsgId: " << firstMsgId << ", lastMsgId: " << lastMsgId << "\n";
+
+    if (lastMsgId < firstMsgId){
+        EV << "lastMsgId < firstMsgId: will not update utility scores \n";
+        return std::pair<int,int>(1,1);
+    }
+
+//    int lastMsgId = std::max(0, currMsgId - config.DistFromCurrMsgId);
+    int numMsgsToCheck = lastMsgId - firstMsgId + 1;
+
+    std::map<int, int> numRx;
     std::map<int, int>::iterator it;
+    for (it = peerToGate.begin(); it != peerToGate.end(); it++){
+        int nodeIdx = it->first;
+        if (nodeIdx != config.LEADER_IDX){
+            numRx[nodeIdx] = 0;
+        }
+    }
+    for (int msgId = firstMsgId; msgId <= lastMsgId; msgId++){
+        for (auto nodeIdx : msgMap[msgId].receivers){
+            numRx[nodeIdx] ++ ;
+        }
+    }
+    EV << "numRx map: \n";
+    printMapIntToInt(numRx);
+
+
+    int minRxNum = numMsgsToCheck;
+    int minRxNodeIdx = 1;
+//    std::map<int, int>::iterator it;
     for (it = numRx.begin(); it != numRx.end(); it++){
         int nodeIdx = it->first;
         int rxNum = it->second;
@@ -158,7 +196,7 @@ void RcNode::updateUScores(){
     EV << "numRx map: \n";
     printMapIntToInt(numRx);
 
-    std::pair<int,int> minRxPair = getMinRxNode(numRx, numMsgsToCheck);
+    std::pair<int,int> minRxPair = getMinRxNode();
     int minRxNodeIdx = minRxPair.first;
     int minRxNum = minRxPair.second;
 
@@ -201,6 +239,24 @@ void RcNode::updateUScores(){
     }
 }
 
+void RcNode::updateLeaderSchedule(){
+
+    int numMsgs = config.LeaderScheduleSize;
+    float prec = config.Prec;
+    float epsilon = config.Epsilon;
+    leaderSchedule = getLeaderSchedule(numNodes, numMsgs, uScores, prec, epsilon);
+
+    for (int msgId = 0; msgId < config.LeaderScheduleSize; msgId++){
+        if (leaderSchedule[msgId] == -1) {
+            EV_WARN << "ISSUE: intermNodeIdx = -1 for msgId = " << currMsgId << "\n";
+        }
+    }
+
+    EV << "Leader schedule:" << endl;
+    printSchedule(leaderSchedule);
+
+}
+
 
 void RcNode::handleMaxMinMessage(MaxMinMsg *msg){
 
@@ -222,6 +278,7 @@ void RcNode::handleMaxMinMessage(MaxMinMsg *msg){
         newMMMsgInfo.msgId = msg->getMsgId();
         newMMMsgInfo.numAcksExp = GateSize - 1;
         newMMMsgInfo.timeOut = false;
+        newMMMsgInfo.intermSeqNum = intermSeqNum;
 
         msgMap[msg->getMsgId()] = newMMMsgInfo;
 
@@ -247,9 +304,11 @@ void RcNode::handleMaxMinMessage(MaxMinMsg *msg){
                     mmmsgCopy->setDestination(dstIdx);
                     handleOutMsg(mmmsgCopy);
                 }
-                tokenBuckets[dstIdx] += rates[dstIdx]; // adding rate to the token should always happen
+                tokenBuckets[dstIdx] += rates[dstIdx]; // should always add rate to the token bucket
             }
         }
+
+        intermSeqNum ++ ;
 //        sendMessage(msg, rx);
         numReceivedAsInterm ++ ;
         emit(numRxAsIntermSignal, 1);
@@ -269,12 +328,28 @@ void RcNode::handleMaxMinACK(MaxMinACK *ammmsg){
     // Message arrived.
 //    EV << "Node " << getIndex() << " received ACK message for msgID " << msgId << " from node " << peerIdx << "\n";
 
-    if (getIndex() != config.LEADER_IDX){
+    if (getIndex() == config.LEADER_IDX){
+        std::pair<int,int> minRxPair = getMinRxNode();
+        int minRxNodeIdx = minRxPair.first;
+        int minRxNum = minRxPair.second;
+        EV << "MinRxNode nodeIdx: " << minRxNodeIdx << " received " << minRxNum << " messages.\n";
+
+        if (minRxNodeIdx == peerIdx) {
+            if (msgMap.at(msgId).timeOut == false){
+                // increase utility score of this intermediate node
+                int intermNodeIdx = msgMap[msgId].intermediate;
+                uScores[intermNodeIdx] += config.UtilAddVal;
+            }
+        }
+    }
+    else {
         if (!nodeToMsgsAcked[peerIdx].empty()) {
             int lastMsgIdAcked = nodeToMsgsAcked[peerIdx].back();
+            int thisIntermSeqNum = msgMap[msgId].intermSeqNum;
+            int lastIntermSeqNum = msgMap[lastMsgIdAcked].intermSeqNum;
             // check if there is a gap in acknowledged messages
             int updateType = NO_UPDATE;
-            if (msgId > lastMsgIdAcked + 1){
+            if (thisIntermSeqNum > lastIntermSeqNum + 1){
                 EV_WARN << "ACK TIMEOUT: Node " << getIndex() << " received non-consecutive ACK from node " << peerIdx << " for msgID " << msgId << "\n";
                 // TODO: reduce rate to this peer (if this is not the leader?)
                 if (nodeToAIMDStatus[peerIdx] == CAN_DECREASE) {
@@ -295,25 +370,10 @@ void RcNode::handleMaxMinACK(MaxMinACK *ammmsg){
             applyAIMDUpdate(peerIdx, updateType);
         }
     }
-//    // TODO: should we check for any timeout before adding (msgId, peerIdx) in our records?s
+    // TODO: should we check for any timeout before adding (msgId, peerIdx) in our records?
     msgMap[msgId].receivers.insert(peerIdx);
     nodeToMsgsAcked[peerIdx].push_back(msgId);
-//
-//    // if msgId exists as key in msgMap
-//    if (msgMap.count(msgId)){
-//        if (msgMap[msgId].timeOut){
-//            EV_WARN << "ACK TIMEOUT: Node " << getIndex() << " received ACK after timeout for msgID " << msgId << "\n";
-//        }
-//        else{
-//            msgMap[msgId].receivers.insert(peerIdx);
-//            // check if have received all ACKS
-////            EV << "Node " << getIndex() << " msgMap[msgId].receivers.size() = " << msgMap[msgId].receivers.size() << "\n";
-////            EV << "Node " << getIndex() << " numAcksExp = " << msgMap[msgId].numAcksExp << "\n";
-//            if (msgMap[msgId].receivers.size() == msgMap[msgId].numAcksExp){
-//                EV << "Node " << getIndex() << " received all ACKS for msgID " << msgId << "\n";
-//            }
-//        }
-//    }
+
 }
 
 ////////////////////////////// Probing Mechanism //////////////////////////////////////////////////////////
@@ -438,18 +498,32 @@ void RcNode::handleSelfTimerMessage(SelfTimer *stmsg){
     newMMMsgInfo.numAcksExp = GateSize;
     newMMMsgInfo.timeOut = false;
 
-    EV << "Updating utility scores \n";
-    updateUScores();
     EV << "Utility scores: \n";
     printMapIntToFloat(uScores);
+
+    int localMsgId = currMsgId % config.LeaderScheduleSize;
+
+    if (localMsgId == 0) {
+        EV << "Updating leader schedule \n";
+        updateLeaderSchedule();
+    }
+
+//    EV << "Updating utility scores \n";
+//    updateUScores();
+//    EV << "Utility scores: \n";
+//    printMapIntToFloat(uScores);
 
     emit(uScore1Signal, uScores[1]);
     emit(uScore2Signal, uScores[2]);
     emit(uScore3Signal, uScores[3]);
 
-    std::vector<std::pair<int,float>> nodesRanked = sortMapByValue(uScores);
-    int intermNodeIdx = nodesRanked.back().first; // todo: uncomment this line
-//    int intermNodeIdx = 1;
+//    std::vector<std::pair<int,float>> nodesRanked = sortMapByValue(uScores);
+//    int intermNodeIdx = nodesRanked.back().first; // todo: uncomment this line
+    int intermNodeIdx = leaderSchedule[localMsgId];
+
+//    if (intermNodeIdx == -1) {
+//        EV_WARN << "ISSUE: intermNodeIdx = -1 for msgId = " << currMsgId << "\n";
+//    }
 
     emit(intermNodeSignal, intermNodeIdx);
 

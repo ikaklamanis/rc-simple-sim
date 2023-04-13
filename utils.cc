@@ -59,5 +59,13 @@ void printMapPairIntIntToMaxMinMsg(std::map<std::pair<int,int>, MaxMinMsg*> myMa
     EV << "\n";
 }
 
+void printSchedule(std::map<int, int> myMap){
+    for(const auto& elem : myMap)
+    {
+        EV << elem.second << ",";
+    }
+    EV << "\n";
+}
+
 
 

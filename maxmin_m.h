@@ -76,7 +76,7 @@ inline void doParsimPacking(omnetpp::cCommBuffer *b, const RCMessage& obj) {obj.
 inline void doParsimUnpacking(omnetpp::cCommBuffer *b, RCMessage& obj) {obj.parsimUnpack(b);}
 
 /**
- * Class generated from <tt>maxmin.msg:18</tt> by opp_msgtool.
+ * Class generated from <tt>maxmin.msg:19</tt> by opp_msgtool.
  * <pre>
  * message MaxMinMsg extends RCMessage
  * {
@@ -107,7 +107,7 @@ inline void doParsimPacking(omnetpp::cCommBuffer *b, const MaxMinMsg& obj) {obj.
 inline void doParsimUnpacking(omnetpp::cCommBuffer *b, MaxMinMsg& obj) {obj.parsimUnpack(b);}
 
 /**
- * Class generated from <tt>maxmin.msg:21</tt> by opp_msgtool.
+ * Class generated from <tt>maxmin.msg:23</tt> by opp_msgtool.
  * <pre>
  * message MaxMinACK
  * {
@@ -153,7 +153,7 @@ inline void doParsimPacking(omnetpp::cCommBuffer *b, const MaxMinACK& obj) {obj.
 inline void doParsimUnpacking(omnetpp::cCommBuffer *b, MaxMinACK& obj) {obj.parsimUnpack(b);}
 
 /**
- * Class generated from <tt>maxmin.msg:27</tt> by opp_msgtool.
+ * Class generated from <tt>maxmin.msg:29</tt> by opp_msgtool.
  * <pre>
  * message ProbeMsg extends RCMessage
  * {
@@ -184,7 +184,7 @@ inline void doParsimPacking(omnetpp::cCommBuffer *b, const ProbeMsg& obj) {obj.p
 inline void doParsimUnpacking(omnetpp::cCommBuffer *b, ProbeMsg& obj) {obj.parsimUnpack(b);}
 
 /**
- * Class generated from <tt>maxmin.msg:30</tt> by opp_msgtool.
+ * Class generated from <tt>maxmin.msg:32</tt> by opp_msgtool.
  * <pre>
  * message ProbeACK
  * {
@@ -222,7 +222,7 @@ inline void doParsimPacking(omnetpp::cCommBuffer *b, const ProbeACK& obj) {obj.p
 inline void doParsimUnpacking(omnetpp::cCommBuffer *b, ProbeACK& obj) {obj.parsimUnpack(b);}
 
 /**
- * Class generated from <tt>maxmin.msg:37</tt> by opp_msgtool.
+ * Class generated from <tt>maxmin.msg:39</tt> by opp_msgtool.
  * <pre>
  * message RCSelfMessage
  * {
@@ -258,7 +258,7 @@ inline void doParsimPacking(omnetpp::cCommBuffer *b, const RCSelfMessage& obj) {
 inline void doParsimUnpacking(omnetpp::cCommBuffer *b, RCSelfMessage& obj) {obj.parsimUnpack(b);}
 
 /**
- * Class generated from <tt>maxmin.msg:42</tt> by opp_msgtool.
+ * Class generated from <tt>maxmin.msg:44</tt> by opp_msgtool.
  * <pre>
  * message SelfTimer
  * {
@@ -294,7 +294,7 @@ inline void doParsimPacking(omnetpp::cCommBuffer *b, const SelfTimer& obj) {obj.
 inline void doParsimUnpacking(omnetpp::cCommBuffer *b, SelfTimer& obj) {obj.parsimUnpack(b);}
 
 /**
- * Class generated from <tt>maxmin.msg:47</tt> by opp_msgtool.
+ * Class generated from <tt>maxmin.msg:49</tt> by opp_msgtool.
  * <pre>
  * message InMsgTimer
  * {
@@ -335,7 +335,7 @@ inline void doParsimPacking(omnetpp::cCommBuffer *b, const InMsgTimer& obj) {obj
 inline void doParsimUnpacking(omnetpp::cCommBuffer *b, InMsgTimer& obj) {obj.parsimUnpack(b);}
 
 /**
- * Class generated from <tt>maxmin.msg:53</tt> by opp_msgtool.
+ * Class generated from <tt>maxmin.msg:55</tt> by opp_msgtool.
  * <pre>
  * message OutMsgTimer
  * {
@@ -381,7 +381,7 @@ inline void doParsimPacking(omnetpp::cCommBuffer *b, const OutMsgTimer& obj) {ob
 inline void doParsimUnpacking(omnetpp::cCommBuffer *b, OutMsgTimer& obj) {obj.parsimUnpack(b);}
 
 /**
- * Class generated from <tt>maxmin.msg:60</tt> by opp_msgtool.
+ * Class generated from <tt>maxmin.msg:62</tt> by opp_msgtool.
  * <pre>
  * message AckTimeOut
  * {
@@ -417,7 +417,7 @@ inline void doParsimPacking(omnetpp::cCommBuffer *b, const AckTimeOut& obj) {obj
 inline void doParsimUnpacking(omnetpp::cCommBuffer *b, AckTimeOut& obj) {obj.parsimUnpack(b);}
 
 /**
- * Class generated from <tt>maxmin.msg:65</tt> by opp_msgtool.
+ * Class generated from <tt>maxmin.msg:67</tt> by opp_msgtool.
  * <pre>
  * message ProbeSelfTimer
  * {
@@ -458,7 +458,7 @@ inline void doParsimPacking(omnetpp::cCommBuffer *b, const ProbeSelfTimer& obj) 
 inline void doParsimUnpacking(omnetpp::cCommBuffer *b, ProbeSelfTimer& obj) {obj.parsimUnpack(b);}
 
 /**
- * Class generated from <tt>maxmin.msg:71</tt> by opp_msgtool.
+ * Class generated from <tt>maxmin.msg:73</tt> by opp_msgtool.
  * <pre>
  * message ProbeAckTimeOut
  * {
@@ -494,7 +494,7 @@ inline void doParsimPacking(omnetpp::cCommBuffer *b, const ProbeAckTimeOut& obj)
 inline void doParsimUnpacking(omnetpp::cCommBuffer *b, ProbeAckTimeOut& obj) {obj.parsimUnpack(b);}
 
 /**
- * Class generated from <tt>maxmin.msg:76</tt> by opp_msgtool.
+ * Class generated from <tt>maxmin.msg:78</tt> by opp_msgtool.
  * <pre>
  * message AIMDTimer
  * {
