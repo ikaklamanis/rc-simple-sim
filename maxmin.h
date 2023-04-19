@@ -81,7 +81,6 @@ class RcNode : public cSimpleModule {
         // only for followers?
         std::map<int,float> rates;
         std::map<int,float> tokenBuckets;
-        std::map<int,ProbeMsgInfo> probeMsgMap;
         int intermSeqNum;
 
 
@@ -92,6 +91,7 @@ class RcNode : public cSimpleModule {
         virtual void handleMessage(cMessage *msg) override;
 
         virtual void fillBookkeepingInfo();
+        virtual void registerSignals();
 
         virtual void handleSelfTimerMessage(SelfTimer *tmsg);
         virtual void handleACKTimeOutMessage(AckTimeOut *atmsg);
@@ -108,16 +108,11 @@ class RcNode : public cSimpleModule {
         virtual void processNextInMsg();
 
         // only for leader?
-        virtual void updateUScores();
         virtual int getLastMsgIdToCheck();
         virtual std::pair<int,int> getMinRxNode();
         virtual void updateLeaderSchedule();
 
         // only for followers?
-        virtual void handleProbeMsg(ProbeMsg *pmsg);
-        virtual void handleProbeMsgACK(ProbeACK *apmsg);
-        virtual void handleProbeSelfTimer(ProbeSelfTimer *pstmsg);
-        virtual void handleProbeAckTimeOut(ProbeAckTimeOut *aptmsg);
         virtual void handleAIMDTimer(AIMDTimer *aimdtmsg);
 
         virtual void applyAIMDUpdate(int peerIdx, int updateType);

@@ -15,7 +15,7 @@ float roundDown(float n, int decimals);
 std::map<int, float> getRoundedScores(std::map<int, float> scores, int prec);
 int findClosestEmptySlot(std::map<int, int> leaderSchedule, int idx);
 
-std::map<int, int> getLeaderSchedule(int numNodes, int numMsgs, std::map<int, float> uScores, int prec, float epsilon);
+std::map<int, int> getLeaderSchedule(int numNodes, int numMsgs, std::map<int, float> uScoresNorm, int prec, float epsilon);
 
 
 
