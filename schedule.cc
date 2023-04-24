@@ -1,7 +1,8 @@
 #include <schedule.h>
 
 
-using namespace omnetpp;
+//using namespace omnetpp;
+
 
 float roundUp(float n, int decimals){
     int multiplier = pow(10, decimals);
@@ -13,16 +14,16 @@ float roundDown(float n, int decimals){
     return (float) ceil(n * multiplier) / (float) multiplier;
 }
 
-std::map<int, float> getRoundedScores(std::map<int, float> scores, int prec){
+map<int, float> getRoundedScores(map<int, float> scores, int prec){
     float credit = 0;
-    std::map<int, float> scoresRounded;
+    map<int, float> scoresRounded;
     for (auto& score : scores) {
         score.second = roundUp(score.second, prec + 2);
     }
-    auto cmp = [](const std::pair<int, float>& a, const std::pair<int, float>& b) {
+    auto cmp = [](const pair<int, float>& a, const pair<int, float>& b) {
         return a.second > b.second;
     };
-    std::vector<std::pair<int, float>> sorted_scores(scores.begin(), scores.end());
+    vector<pair<int, float>> sorted_scores(scores.begin(), scores.end());
     sort(sorted_scores.begin(), sorted_scores.end(), cmp);
 //    double sum_scores = 0;
 //    for (const auto& score : sorted_scores) {
@@ -51,14 +52,14 @@ std::map<int, float> getRoundedScores(std::map<int, float> scores, int prec){
 
 
 
-int findClosestEmptySlot(std::map<int, int> leaderSchedule, int idx) {
+int findClosestEmptySlot(map<int, int> leaderSchedule, int idx) {
     if (leaderSchedule[idx] == -1) {
         return idx;
     }
     int min_idx = leaderSchedule.begin()->first;
     int max_idx = leaderSchedule.rbegin()->first;
     for (int i = 0; i < max_idx + 1; i++) {
-        std::vector<int> indices{idx + i, idx - i};
+        vector<int> indices{idx + i, idx - i};
         for (int next_idx : indices) {
             if (leaderSchedule.find(next_idx) != leaderSchedule.end() && leaderSchedule[next_idx] == -1) {
                 return next_idx;
@@ -71,10 +72,10 @@ int findClosestEmptySlot(std::map<int, int> leaderSchedule, int idx) {
 
 // TODO: currently assuming that follower nodes are nodes 1,2,3,... Make more modular
 
-std::map<int, int> getLeaderSchedule(int numNodes, int numMsgs, std::map<int, float> uScoresNorm, int prec, float epsilon) {
-    std::map<int, float> uScoresRounded;
-    std::map<int, int> nodeToNumMsgs, leaderSchedule;
-    std::map<int, std::vector<float>> nodeToLocs;
+map<int, int> getLeaderSchedule(int numNodes, int numMsgs, map<int, float> uScoresNorm, int prec, float epsilon) {
+    map<int, float> uScoresRounded;
+    map<int, int> nodeToNumMsgs, leaderSchedule;
+    map<int, vector<float>> nodeToLocs;
 
     uScoresRounded = getRoundedScores(uScoresNorm, prec);
     EV << "uScoresRounded" << endl;
@@ -97,14 +98,14 @@ std::map<int, int> getLeaderSchedule(int numNodes, int numMsgs, std::map<int, fl
         leaderSchedule[msgId] = -1;
     }
 
-    std::vector<std::pair<int, float>> sorted_uScoresNorm(uScoresRounded.begin(), uScoresRounded.end());
-    std::sort(sorted_uScoresNorm.begin(), sorted_uScoresNorm.end(), [](auto const& lhs, auto const& rhs) {
+    vector<pair<int, float>> sorted_uScoresNorm(uScoresRounded.begin(), uScoresRounded.end());
+    sort(sorted_uScoresNorm.begin(), sorted_uScoresNorm.end(), [](auto const& lhs, auto const& rhs) {
         return lhs.second < rhs.second;
     });
 
     for (int i = 0; i < sorted_uScoresNorm.size() - 1; i++) {
         int nodeIdx = sorted_uScoresNorm[i].first;
-        std::vector<float> locs = nodeToLocs[nodeIdx];
+        vector<float> locs = nodeToLocs[nodeIdx];
         for (int j = 0; j < locs.size(); j++) {
             int loc = findClosestEmptySlot(leaderSchedule, round(locs[j]));
             if (loc != -1) {
@@ -127,7 +128,7 @@ std::map<int, int> getLeaderSchedule(int numNodes, int numMsgs, std::map<int, fl
 //    }
 //    EV << endl;
 
-    std::map<int, float> uScoresCalc;
+    map<int, float> uScoresCalc;
     for (int nodeIdx = 1; nodeIdx < numNodes; nodeIdx++) {
         uScoresCalc[nodeIdx] = 0;
     }
@@ -165,13 +166,13 @@ std::map<int, int> getLeaderSchedule(int numNodes, int numMsgs, std::map<int, fl
 //    for (int i = 1; i < 20; i++) {
 //        for (int j = 1; j < 50; j++) {
 //            for (int k = 1; k < 50; k++) {
-//                std::map<int, float> uScores = {{1, i}, {2, j}, {3, k}};
+//                map<int, float> uScores = {{1, i}, {2, j}, {3, k}};
 //                    EV << "uScores" << endl;
 //                    for(int i=1; i<numNodes; i++) {
 //                        EV << i << " : " << uScores[i] << endl;
 //                    }
 //                    EV << endl;
-//                std::map<int, int> leaderSchedule = getLeaderSchedule(numNodes, numMsgs, uScores, prec, epsilon);
+//                map<int, int> leaderSchedule = getLeaderSchedule(numNodes, numMsgs, uScores, prec, epsilon);
 //                // do something with leaderSchedule
 //            }
 //        }

@@ -9,14 +9,13 @@
 #include "maxmin_m.h"
 
 using namespace omnetpp;
+using namespace std;
 
 
-const int numNodes = 4;
+const int numNodes = 6; // int numNodes = access array size
 // the first node (index 0) is the leader
-const int ingress[numNodes] = {100, 3000, 3000, 3000};
-const int egress[numNodes] =  {1000, 1000, 400, 100};
-
-//const int ackTimeOuts[numNodes] = {0.2, 0.2, 0.2, 0.2};
+const float ingress[numNodes] = {100, 1000, 1000, 1000, 1000, 1000};
+const float egress[numNodes] =  {1000, 1400, 1000, 800, 600, 200};
 
 // For reference: propagation delay is 10ms = 0.01s
 struct Config {
@@ -33,18 +32,22 @@ struct Config {
 
 //    const float ackTimeOutFactor = 5.0; // set to constant: 400ms
     const float ACKTimeoutDuration = 0.2;
-    const int InQueueMaxSize = 400; // order of 10, not 100, order of bandwidth delay product (bdp)
-    const int OutQueueMaxSize = 400; // order of 10, not 100 --> maybe 20,30
+    const int InQueueMaxSize = 200; // order of 10, not 100, order of bandwidth delay product (bdp)
+    const int OutQueueMaxSize = 200; // order of 10, not 100 --> maybe 20,30
+
+    const float RxRateSignalInterval = 0.5; // emit signal every 0.5 seconds
+
+    const float RateChangeInterval = 20;
 };
 
 struct AIMDConfig {
-    const float AddVal = 0.05;
-    const float MultFactor = 0.9;
+    const float AddVal = 0.001;
+    const float MultFactor = 0.5;
     const float InitVal = 1;
     const float MinVal = 0.1;
     const float MaxVal = 1;
 
-    const float MDInterval = 0.04;
+    const float MDInterval = 0.5;
 };
 
 enum AIMDUpdateType{
@@ -64,10 +67,10 @@ enum QueueType{
 struct MaxMinMsgInfo {
     int msgId;
     int intermediate;
-    std::set<int> receivers;
+    set<int> receivers;
     int numAcksExp;
     bool timeOut;
-    int intermSeqNum;
+//    map<int, int> intermSeqNumMap;
 };
 
 struct ProbeMsgInfo {
@@ -83,17 +86,17 @@ inline bool instanceof(const T *ptr) {
 }
 
 // utility comparator function to pass to the sort() module
-bool sortByVal(const std::pair<int, int> &a,
-               const std::pair<int, int> &b);
+bool sortByVal(const pair<int, int> &a,
+               const pair<int, int> &b);
 
-std::vector<std::pair<int,float>> sortMapByValue(std::map<int,float> M);
+vector<pair<int,float>> sortMapByValue(map<int,float> M);
 
-void printMapIntToInt(std::map<int, int> myMap);
-void printMapIntToFloat(std::map<int, float> myMap);
-//void printMapIntToIntArray(std::map<int, int[]> myMap);
-void printMapPairIntIntToMaxMinMsg(std::map<std::pair<int,int>, MaxMinMsg*> myMap);
+void printMapIntToInt(map<int, int> myMap);
+void printMapIntToFloat(map<int, float> myMap);
+//void printMapIntToIntArray(map<int, int[]> myMap);
+void printMapPairIntIntToMaxMinMsg(map<pair<int,int>, MaxMinMsg*> myMap);
 
-void printSchedule(std::map<int, int> myMap);
+void printSchedule(map<int, int> myMap);
 
 
 #endif

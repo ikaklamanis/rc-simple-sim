@@ -15,6 +15,7 @@
 #include <numeric>
 
 using namespace omnetpp;
+using namespace std;
 
 // Include a generated file: the header file created from maxmin.msg.
 // It contains the definition of the MaxMinMgs class, derived from
@@ -26,62 +27,69 @@ using namespace omnetpp;
 
 class RcNode : public cSimpleModule {
     private:
+        simsignal_t bdInRateSignal;
+        simsignal_t bdOutRateSignal;
         simsignal_t numRxSignal;
-
+        simsignal_t rxRateSignal;
         simsignal_t numRxAsIntermSignal;
-
-        simsignal_t uScore1Signal;
-        simsignal_t uScore2Signal;
-        simsignal_t uScore3Signal;
-
+        simsignal_t rxRateAsIntermSignal;
         simsignal_t intermNodeSignal;
-
         simsignal_t numDrOutQSignal;
         simsignal_t numDrInQSignal;
-
         simsignal_t outQSizeSignal;
         simsignal_t inQSizeSignal;
 
-        simsignal_t rate1Signal;
-        simsignal_t rate2Signal;
-
+        vector<simsignal_t> uScoreSignal;
+        vector<simsignal_t> pRateSignal;
 
         long numReceived = 0;
         long numReceivedAsInterm = 0;
+
+        long numRxTemp = 0;
+        long numRxAsIntermTemp = 0;
 
         float bdInRate;
         float bdOutRate;
 
         int GateSize;
-        std::map<int, MaxMinMsgInfo> msgMap;
-        std::map<int, int> peerToGate, gateToPeer;
+//        int numNodes;
+
+        map<int, MaxMinMsgInfo> msgMap;
+        map<int, int> peerToGate, gateToPeer;
         Config config;
         AIMDConfig aimdConfig;
 
-        std::map<int, std::vector<int>> nodeToMsgsAcked;
-        std::map<int, int> nodeToAIMDStatus;
+        map<int, vector<int>> nodeToMsgsSent;
+        // key = (peerIdx, msgId), value = seqNum
+        map<int, int> nodeToCurrSeqNum;
+        map<pair<int,int>, int> intermSeqNumMap;
+        map<int,int> nodeToNewRateFirstMsgId;
 
-        std::queue<int> outQueue;
+        map<int, vector<int>> nodeToMsgsAcked;
+        map<int, int> nodeToAIMDStatus;
+
+        queue<int> outQueue;
         bool outQueueBusy = false;
 
-        std::queue<int> inQueue;
+        queue<int> inQueue;
         bool inQueueBusy = false;
 
         // msgType: MaxMinMsg = 0, ProbeMsg = 1
 
-        std::map<int, cMessage*> inMsgMap;
-        std::map<int, RCMessage*> outMsgMap;
+        map<int, cMessage*> inMsgMap;
+        map<int, RCMessage*> outMsgMap;
 
         // only for leader?
-        std::map<int, float> uScores;
+        map<int, float> uScores;
 //        int minRxNode;
         int currMsgId = 0;
-        std::map<int,int> leaderSchedule; // TODO: define length
+        map<int,int> leaderSchedule; // TODO: define length
 
         // only for followers?
-        std::map<int,float> rates;
-        std::map<int,float> tokenBuckets;
-        int intermSeqNum;
+        map<int,float> rates;
+        map<int,float> tokenBuckets;
+
+//        int intermSeqNum;
 
 
     protected:
@@ -97,10 +105,12 @@ class RcNode : public cSimpleModule {
         virtual void handleACKTimeOutMessage(AckTimeOut *atmsg);
         virtual void handleInMessageTimer(InMsgTimer *intmsg);
         virtual void handleOutMessageTimer(OutMsgTimer *outtmsg);
+        virtual void handleRxRateTimer(RxRateTimer *rxrtmsg);
+        virtual void handleRateChangeTimer(RateChangeTimer *rctmsg);
 
         virtual void handleMaxMinMessage(MaxMinMsg *mmmsg);
         virtual void handleMaxMinACK(MaxMinACK *ammmsg);
-//        virtual void sendMessage(cMessage *msg, std::vector<int> rx);
+//        virtual void sendMessage(cMessage *msg, vector<int> rx);
         virtual void sendACK(MaxMinMsg *msg, int dstIdx);
 
         virtual void handleOutMsg(RCMessage *msg);
@@ -109,7 +119,7 @@ class RcNode : public cSimpleModule {
 
         // only for leader?
         virtual int getLastMsgIdToCheck();
-        virtual std::pair<int,int> getMinRxNode();
+        virtual pair<int,int> getMinRxNode();
         virtual void updateLeaderSchedule();
 
         // only for followers?

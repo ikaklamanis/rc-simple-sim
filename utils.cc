@@ -1,17 +1,17 @@
 #include "utils.h"
 
 // utility comparator function to pass to the sort() module
-bool sortByVal(const std::pair<int, int> &a,
-               const std::pair<int, int> &b)
+bool sortByVal(const pair<int, int> &a,
+               const pair<int, int> &b)
 {
     return (a.second < b.second);
 }
 
 
-std::vector<std::pair<int,float>> sortMapByValue(std::map<int,float> M)
+vector<pair<int,float>> sortMapByValue(map<int,float> M)
 {
     // Declare vector of pairs
-    std::vector<std::pair<int,float>> A;
+    vector<pair<int,float>> A;
     // Copy key-value pair from Map
     // to vector of pairs
     for (auto& it : M) {
@@ -23,7 +23,7 @@ std::vector<std::pair<int,float>> sortMapByValue(std::map<int,float> M)
 }
 
 
-void printMapIntToInt(std::map<int, int> myMap){
+void printMapIntToInt(map<int, int> myMap){
     for(const auto& elem : myMap)
     {
        EV << elem.first << ": " << elem.second << "\n";
@@ -31,7 +31,7 @@ void printMapIntToInt(std::map<int, int> myMap){
     EV << "\n";
 }
 
-void printMapIntToFloat(std::map<int, float> myMap){
+void printMapIntToFloat(map<int, float> myMap){
     for(const auto& elem : myMap)
     {
        EV << elem.first << ": " << elem.second << "\n";
@@ -39,7 +39,7 @@ void printMapIntToFloat(std::map<int, float> myMap){
     EV << "\n";
 }
 
-//void printMapIntToIntArray(std::map<int, int[]> myMap){
+//void printMapIntToIntArray(map<int, int[]> myMap){
 //    for(const auto& elem : myMap)
 //    {
 //       EV << elem.first << ": {";
@@ -51,7 +51,7 @@ void printMapIntToFloat(std::map<int, float> myMap){
 //    EV << "\n";
 //}
 
-void printMapPairIntIntToMaxMinMsg(std::map<std::pair<int,int>, MaxMinMsg*> myMap){
+void printMapPairIntIntToMaxMinMsg(map<pair<int,int>, MaxMinMsg*> myMap){
     for(auto& elem : myMap)
     {
        EV << "msgID: " << elem.first.first << ", dstIdx: " << elem.first.second << "\n";
@@ -59,7 +59,7 @@ void printMapPairIntIntToMaxMinMsg(std::map<std::pair<int,int>, MaxMinMsg*> myMa
     EV << "\n";
 }
 
-void printSchedule(std::map<int, int> myMap){
+void printSchedule(map<int, int> myMap){
     for(const auto& elem : myMap)
     {
         EV << elem.second << ",";

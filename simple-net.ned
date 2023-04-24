@@ -19,41 +19,38 @@ simple RcNode
     parameters:
         @display("i=block/routing");
 
-        @signal[numRxSignal](type="int");
-        @signal[numRxAsIntermSignal](type="int");
+		@signal[bdInRateSignal](type="float");  
+		@signal[bdOutRateSignal](type="float");  
 
-        @signal[uScore1Signal](type="float");
-        @signal[uScore2Signal](type="float");
-        @signal[uScore3Signal](type="float");
-        
-        @signal[intermNodeSignal](type="int");
-        
+        @signal[numRxSignal](type="int");
+        @signal[rxRateSignal](type="float");      
+        @signal[numRxAsIntermSignal](type="int");
+        @signal[rxRateAsIntermSignal](type="float");       
+        @signal[intermNodeSignal](type="int");      
         @signal[numDrInQSignal](type="int");
         @signal[numDrOutQSignal](type="int");
         @signal[inQSizeSignal](type="int");
         @signal[outQSizeSignal](type="int");
-        
-        @signal[rate1Signal](type="float");
-        @signal[rate2Signal](type="float");
+              
+        @signal[utilScore*](type="float");
+        @signal[peerRate*](type="float");
 
+		@statistic[bdInRate](title="bandwidth ingress rate"; source=bdInRateSignal; record=stats,vector; );
+		@statistic[bdOutRate](title="bandwidth egress rate"; source=bdOutRateSignal; record=stats,vector; );
 
         @statistic[numReceived](title="num msgs rx"; source=sum(numRxSignal); record=stats,vector; );
+        @statistic[rxRate](title="msgs rx rate"; source=rxRateSignal; record=stats,vector; );
         @statistic[numReceivedAsInterm](title="num msgs rx as interm node"; source=sum(numRxAsIntermSignal); record=stats,vector);
-
-        @statistic[uScore1](title="utility score of node 1"; source="uScore1Signal"; record=stats,vector; );
-        @statistic[uScore2](title="utility score of node 2"; source="uScore2Signal"; record=stats,vector; );
-        @statistic[uScore3](title="utility score of node 3"; source="uScore3Signal"; record=stats,vector; );
-        
+        @statistic[rxRateAsInterm](title="msgs rx rate as interm"; source=rxRateAsIntermSignal; record=stats,vector; );      
         @statistic[intermNode](title="interm node idx"; source=intermNodeSignal; record=stats,vector; );
-        
         @statistic[numDrIn](title="inQueue num msgs dropped"; source=sum(numDrInQSignal); record=stats,vector; );
         @statistic[numDrOut](title="outQueue num msgs dropped"; source=sum(numDrOutQSignal); record=stats,vector; );
         @statistic[inQSize](title="inQueue size"; source=inQSizeSignal; record=stats,vector; );
         @statistic[outQSize](title="outQueue size"; source=outQSizeSignal; record=stats,vector; );
         
-        @statistic[rate1](title="rate to peer 1"; source="rate1Signal"; record=stats,vector; );
-        @statistic[rate2](title="rate to peer 2"; source="rate2Signal"; record=stats,vector; );
-
+        @statisticTemplate[uScore](record=stats,vector; );        
+        @statisticTemplate[pRate](record=stats,vector; );  
+       
 
     gates:
         inout gate[];
@@ -61,6 +58,9 @@ simple RcNode
 
 network MaxMinRC
 {
+    parameters:
+        int numNodes = default(6);
+    
     types:
         channel Channel extends ned.DelayChannel
         {
@@ -68,7 +68,7 @@ network MaxMinRC
         }
 
     submodules:
-        node[4]: RcNode;
+        node[numNodes]: RcNode;
     connections:
         //        peer[i] <--> node.peer++ for i=0..sizeof(peer)-1;
 

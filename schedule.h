@@ -7,15 +7,16 @@
 
 
 using namespace omnetpp;
+using namespace std;
 
 
 float roundUp(float n, int decimals);
 float roundDown(float n, int decimals);
 
-std::map<int, float> getRoundedScores(std::map<int, float> scores, int prec);
-int findClosestEmptySlot(std::map<int, int> leaderSchedule, int idx);
+map<int, float> getRoundedScores(map<int, float> scores, int prec);
+int findClosestEmptySlot(map<int, int> leaderSchedule, int idx);
 
-std::map<int, int> getLeaderSchedule(int numNodes, int numMsgs, std::map<int, float> uScoresNorm, int prec, float epsilon);
+map<int, int> getLeaderSchedule(int numNodes, int numMsgs, map<int, float> uScoresNorm, int prec, float epsilon);
 
 
 

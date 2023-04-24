@@ -18,6 +18,7 @@ void RcNode::initialize(){
 
     // TODO: discard map entries after a specified timeout, to avoid memory overflow
 
+
     fillBookkeepingInfo();
 
     bdInRate = ingress[getIndex()];
@@ -45,10 +46,31 @@ void RcNode::initialize(){
     else {
         // schedule first probe msg
 
-        intermSeqNum = 0;
+//        intermSeqNum = 0;
     }
 
     registerSignals();
+
+    RxRateTimer *newrxrtmsg = new RxRateTimer();
+    float interval = config.RxRateSignalInterval;
+    scheduleAt(simTime() + interval, newrxrtmsg);
+
+
+    int numChanges = 2;
+
+    RateChangeTimer *rctmsg = new RateChangeTimer();
+//    scheduleAt(simTime() + 5, rctmsg);
+//
+//    scheduleAt(simTime() + 25, rctmsg->dup());
+//
+//    scheduleAt(simTime() + 60, rctmsg->dup());
+
+
+
+//    for (int i = 0; i < numChanges - 1; i ++){
+//        RateChangeTimer *newrctmsg = new RateChangeTimer();
+//        scheduleAt(simTime() + config.RateChangeInterval, newrctmsg);
+//    }
 
 }
 
@@ -67,8 +89,14 @@ void RcNode::fillBookkeepingInfo(){
             rates[peerIndex] = aimdConfig.InitVal;
             tokenBuckets[peerIndex] = aimdConfig.InitVal;
 
-            std::vector<int> msgIds;
-            nodeToMsgsAcked[peerIndex] = msgIds;
+            vector<int> msgIds1;
+            vector<int> msgIds2;
+            nodeToMsgsSent[peerIndex] = msgIds1;
+            nodeToMsgsAcked[peerIndex] = msgIds2;
+            nodeToCurrSeqNum[peerIndex] = 0;
+
+            nodeToNewRateFirstMsgId[peerIndex] = -1;
+
             nodeToAIMDStatus[peerIndex] = CAN_DECREASE; // can apply MD update to this node iff true
         }
     }
@@ -76,23 +104,64 @@ void RcNode::fillBookkeepingInfo(){
 
 void RcNode::registerSignals(){
 
+
     if (getIndex() == 0) {
-        uScore1Signal = registerSignal("uScore1Signal");
-        uScore2Signal = registerSignal("uScore2Signal");
-        uScore3Signal = registerSignal("uScore3Signal");
 
         intermNodeSignal = registerSignal("intermNodeSignal");
+
+        uScoreSignal = vector<simsignal_t>(GateSize);
+
+        map<int, int>::iterator it;
+        for (it = gateToPeer.begin(); it != gateToPeer.end(); it++){
+            int gateIdx = it->first;
+            int nodeIdx = it->second;
+
+            char signalName[64];
+
+            sprintf(signalName, "utilScoreNode%d", nodeIdx);
+            uScoreSignal[gateIdx] = registerSignal(signalName);
+            // set up statistic recording
+            char statisticName[64];
+            sprintf(statisticName, "uScoreNode%d", nodeIdx);
+            cProperty *statisticTemplate = getProperties()->get("statisticTemplate", "uScore");
+            getEnvir()->addResultRecorders(this, uScoreSignal[gateIdx], statisticName, statisticTemplate);
+
+        }
+
     }
     else {
         numRxAsIntermSignal = registerSignal("numRxAsIntermSignal");
-        rate1Signal = registerSignal("rate1Signal");
-        rate2Signal = registerSignal("rate2Signal");
+        rxRateAsIntermSignal = registerSignal("rxRateAsIntermSignal");
+
+        pRateSignal = vector<simsignal_t>(GateSize);
+
+        map<int, int>::iterator it;
+        for (it = gateToPeer.begin(); it != gateToPeer.end(); it++){
+            int gateIdx = it->first;
+            int nodeIdx = it->second;
+
+            char signalName[64];
+
+            sprintf(signalName, "peerRateToNode%d", nodeIdx);
+            pRateSignal[gateIdx] = registerSignal(signalName);
+            // set up statistic recording
+            char statisticName[64];
+            sprintf(statisticName, "rateToNode%d", nodeIdx);
+            cProperty *statisticTemplate = getProperties()->get("statisticTemplate", "pRate");
+            getEnvir()->addResultRecorders(this, pRateSignal[gateIdx], statisticName, statisticTemplate);
+
+        }
+
     }
+
+    bdInRateSignal = registerSignal("bdInRateSignal");
+    bdOutRateSignal = registerSignal("bdOutRateSignal");
 
     outQSizeSignal = registerSignal("outQSizeSignal");
     inQSizeSignal = registerSignal("inQSizeSignal");
 
     numRxSignal = registerSignal("numRxSignal");
+    rxRateSignal = registerSignal("rxRateSignal");
 
     numDrOutQSignal = registerSignal("numDrOutQSignal");
     numDrInQSignal = registerSignal("numDrInQSignal");
@@ -109,25 +178,25 @@ int RcNode::getLastMsgIdToCheck(){
     return -1;
 }
 
-//std::map<int, int> numRx, int minRxNumInit
-std::pair<int,int> RcNode::getMinRxNode(){
+//map<int, int> numRx, int minRxNumInit
+pair<int,int> RcNode::getMinRxNode(){
 
     int lastMsgId = getLastMsgIdToCheck();
-    int firstMsgId = std::max(0, lastMsgId - config.TotalMsgsToCheck + 1);
+    int firstMsgId = max(0, lastMsgId - config.TotalMsgsToCheck + 1);
 //    int lastMsgId = currMsgId - config.DistFromCurrMsgId;
 
     EV << "firstMsgId: " << firstMsgId << ", lastMsgId: " << lastMsgId << "\n";
 
     if (lastMsgId < firstMsgId){
         EV << "lastMsgId < firstMsgId: will not update utility scores \n";
-        return std::pair<int,int>(1,1);
+        return pair<int,int>(1,1);
     }
 
-//    int lastMsgId = std::max(0, currMsgId - config.DistFromCurrMsgId);
+//    int lastMsgId = max(0, currMsgId - config.DistFromCurrMsgId);
     int numMsgsToCheck = lastMsgId - firstMsgId + 1;
 
-    std::map<int, int> numRx;
-    std::map<int, int>::iterator it;
+    map<int, int> numRx;
+    map<int, int>::iterator it;
     for (it = peerToGate.begin(); it != peerToGate.end(); it++){
         int nodeIdx = it->first;
         if (nodeIdx != config.LEADER_IDX){
@@ -145,7 +214,7 @@ std::pair<int,int> RcNode::getMinRxNode(){
 
     int minRxNum = numMsgsToCheck;
     int minRxNodeIdx = 1;
-//    std::map<int, int>::iterator it;
+//    map<int, int>::iterator it;
     for (it = numRx.begin(); it != numRx.end(); it++){
         int nodeIdx = it->first;
         int rxNum = it->second;
@@ -154,7 +223,7 @@ std::pair<int,int> RcNode::getMinRxNode(){
             minRxNodeIdx = nodeIdx;
         }
     }
-    return std::pair<int,int>(minRxNodeIdx, minRxNum);
+    return pair<int,int>(minRxNodeIdx, minRxNum);
 }
 
 
@@ -164,14 +233,14 @@ void RcNode::updateLeaderSchedule(){
     float prec = config.Prec;
     float epsilon = config.Epsilon;
 
-    std::map<int, float> uScoresNorm;
+    map<int, float> uScoresNorm;
     float uScoresSum = 0;
     for (auto const& [key, val] : uScores) uScoresSum += val;
     for (auto const& [key, val] : uScores) uScoresNorm[key] = val / uScoresSum;
 
-    emit(uScore1Signal, uScoresNorm[1]);
-    emit(uScore2Signal, uScoresNorm[2]);
-    emit(uScore3Signal, uScoresNorm[3]);
+    for (int i = 0; i < GateSize; i++){
+        emit(uScoreSignal[i], uScoresNorm[gateToPeer[i]]);
+    }
 
     leaderSchedule = getLeaderSchedule(numNodes, numMsgs, uScoresNorm, prec, epsilon);
 
@@ -197,17 +266,20 @@ void RcNode::handleMaxMinMessage(MaxMinMsg *msg){
     // send ACK to sender
     sendACK(msg, peerIdx);
     numReceived ++ ;
+    numRxTemp ++ ;
 
     emit(numRxSignal, 1);
 
     // DONE: find connection between gate index and module index
     if (peerIdx == config.LEADER_IDX) {
+
+        numRxAsIntermTemp ++ ;
+
         // Node serves as an intermediate node. Need to broadcast the message to all nodes except for the leader.
         MaxMinMsgInfo newMMMsgInfo;
         newMMMsgInfo.msgId = msg->getMsgId();
         newMMMsgInfo.numAcksExp = GateSize - 1;
         newMMMsgInfo.timeOut = false;
-        newMMMsgInfo.intermSeqNum = intermSeqNum;
 
         msgMap[msg->getMsgId()] = newMMMsgInfo;
 
@@ -217,9 +289,9 @@ void RcNode::handleMaxMinMessage(MaxMinMsg *msg){
         EV << "tokenBuckets map: \n";
         printMapIntToFloat(tokenBuckets);
 
-//        std::vector<int> rx;
-//        std::map<int, int>::reverse_iterator it;
-        std::map<int, int>::iterator it;
+//        vector<int> rx;
+//        map<int, int>::reverse_iterator it;
+        map<int, int>::iterator it;
         for (it = peerToGate.begin(); it != peerToGate.end(); it++){
             int dstIdx = it->first;
             if (dstIdx != config.LEADER_IDX) {
@@ -232,12 +304,24 @@ void RcNode::handleMaxMinMessage(MaxMinMsg *msg){
                     MaxMinMsg *mmmsgCopy = msg->dup();
                     mmmsgCopy->setDestination(dstIdx);
                     handleOutMsg(mmmsgCopy);
+
+                    nodeToMsgsSent[dstIdx].push_back(mmmsgCopy->getMsgId());
+
+                    pair<int,int> key = pair<int,int>(dstIdx, mmmsgCopy->getMsgId());
+                    intermSeqNumMap[key] = nodeToCurrSeqNum[dstIdx];
+                    nodeToCurrSeqNum[dstIdx] ++ ;
+
+                    // first message sent after applying MD rate update
+                    if (nodeToNewRateFirstMsgId[dstIdx] == -1){
+                        nodeToNewRateFirstMsgId[dstIdx] = mmmsgCopy->getMsgId();
+                    }
+
                 }
                 tokenBuckets[dstIdx] += rates[dstIdx]; // should always add rate to the token bucket
             }
         }
 
-        intermSeqNum ++ ;
+//        intermSeqNum ++ ;
 //        sendMessage(msg, rx);
         numReceivedAsInterm ++ ;
         emit(numRxAsIntermSignal, 1);
@@ -255,10 +339,10 @@ void RcNode::handleMaxMinACK(MaxMinACK *ammmsg){
     int peerIdx = gateToPeer[peerGate];
     int msgId = ammmsg->getMsgId();
     // Message arrived.
-//    EV << "Node " << getIndex() << " received ACK message for msgID " << msgId << " from node " << peerIdx << "\n";
+    EV << "Node " << getIndex() << " received ACK message for msgID " << msgId << " from node " << peerIdx << "\n";
 
     if (getIndex() == config.LEADER_IDX){
-        std::pair<int,int> minRxPair = getMinRxNode();
+        pair<int,int> minRxPair = getMinRxNode();
         int minRxNodeIdx = minRxPair.first;
         int minRxNum = minRxPair.second;
         EV << "MinRxNode nodeIdx: " << minRxNodeIdx << " received " << minRxNum << " messages.\n";
@@ -274,9 +358,18 @@ void RcNode::handleMaxMinACK(MaxMinACK *ammmsg){
     else {
         if (!nodeToMsgsAcked[peerIdx].empty()) {
             int lastMsgIdAcked = nodeToMsgsAcked[peerIdx].back();
-            int thisIntermSeqNum = msgMap[msgId].intermSeqNum;
-            int lastIntermSeqNum = msgMap[lastMsgIdAcked].intermSeqNum;
-            // check if there is a gap in acknowledged messages
+
+            pair<int,int> lastMsgKey = pair<int,int>(peerIdx, lastMsgIdAcked);
+            pair<int,int> thisMsgKey = pair<int,int>(peerIdx, msgId);
+            int lastIntermSeqNum = intermSeqNumMap[lastMsgKey];
+            int thisIntermSeqNum = intermSeqNumMap[thisMsgKey];
+
+            if (msgId > nodeToNewRateFirstMsgId[peerIdx]){
+                EV_WARN << " Node " << getIndex() << " CAN DECREASE rate to node " << peerIdx << " since msgId > " << nodeToNewRateFirstMsgId[peerIdx] << "\n";
+                nodeToAIMDStatus[peerIdx] = CAN_DECREASE;
+            }
+
+            // check if there is a gap in acknowledged messages // DONE: fix bug here
             int updateType = NO_UPDATE;
             if (thisIntermSeqNum > lastIntermSeqNum + 1){
                 EV_WARN << "ACK TIMEOUT: Node " << getIndex() << " received non-consecutive ACK from node " << peerIdx << " for msgID " << msgId << "\n";
@@ -286,10 +379,10 @@ void RcNode::handleMaxMinACK(MaxMinACK *ammmsg){
                     updateType = DECREASE;
                     nodeToAIMDStatus[peerIdx] = NO_DECREASE;
 
-                    AIMDTimer *aimdtmsg = new AIMDTimer();
-                    aimdtmsg->setPeerIdx(peerIdx);
-                    aimdtmsg->setMsgId(msgId);
-                    scheduleAt(simTime() + aimdConfig.MDInterval, aimdtmsg);
+//                    AIMDTimer *aimdtmsg = new AIMDTimer();
+//                    aimdtmsg->setPeerIdx(peerIdx);
+//                    aimdtmsg->setMsgId(msgId);
+//                    scheduleAt(simTime() + aimdConfig.MDInterval, aimdtmsg);
                 }
             }
             else {
@@ -311,24 +404,36 @@ void RcNode::applyAIMDUpdate(int peerIdx, int updateType){
     if (updateType == NO_UPDATE) return;
 
     float currRate = rates[peerIdx];
+    EV << "AIMDUpdate: Node " << getIndex() << " will update node " << peerIdx << "'s current rate = " << currRate << "\n";
     float newRate = currRate;
-    if (updateType == DECREASE) newRate = std::max(aimdConfig.MinVal, aimdConfig.MultFactor * currRate);
-//    if (probeMsgMap[msgId].timeOut) newRate = currRate;
-    else if (updateType == INCREASE) newRate = std::min(aimdConfig.MaxVal, currRate + aimdConfig.AddVal);
+
+    if (updateType == DECREASE) {
+        newRate = max(aimdConfig.MinVal, aimdConfig.MultFactor * currRate);
+        nodeToNewRateFirstMsgId[peerIdx] = -1;
+    }
+    else if (updateType == INCREASE) {
+//        newRate = min(aimdConfig.MaxVal, currRate + aimdConfig.AddVal * (aimdConfig.MinVal / currRate));
+        newRate = min(aimdConfig.MaxVal, currRate + aimdConfig.AddVal);
+    }
+
+    EV << "AIMDUpdate: Node " << getIndex() << " updated node " << peerIdx << "'s rate. newRate = " << newRate << "\n";
+
     rates[peerIdx] = newRate;
 
-    std::map<int, int>::iterator it;
-    int rateValues[2];
-    int i = 0;
+    map<int, int>::iterator it;
+//    float rateValues[2]; // needs to have type = float!!
+//    int i = 0;
     for (it = peerToGate.begin(); it != peerToGate.end(); it++){
-        int dstIdx = it->first;
-        if (dstIdx != config.LEADER_IDX) {
-            rateValues[i] = rates[dstIdx];
-            i++ ;
-        }
+        int nodeIdx = it->first;
+//        if (dstIdx != config.LEADER_IDX) {
+//            EV << "AIMDUpdate: node " << getIndex() << " emitting signals. dstIdx = " << dstIdx << " and rates[dstIdx] = " << rates[dstIdx] << "\n";
+//            rateValues[i] = rates[dstIdx];
+//            EV << "AIMDUpdate: node " << getIndex() << " emitting signals. i = " << i << " and rateValues[i] =  " << rateValues[i] << "\n";
+//            i++ ;
+//        }
+        emit(pRateSignal[peerToGate[nodeIdx]], rates[nodeIdx]);
     }
-    emit(rate1Signal, rateValues[0]);
-    emit(rate2Signal, rateValues[1]);
+
 }
 
 void RcNode::handleAIMDTimer(AIMDTimer *aimdtmsg){
@@ -369,6 +474,8 @@ void RcNode::handleSelfTimerMessage(SelfTimer *stmsg){
 //    emit(uScore3Signal, uScores[3]);
 
     int intermNodeIdx = leaderSchedule[localMsgId];
+
+//    int intermNodeIdx = 1; // TODO: comment out this line
 
 //    if (intermNodeIdx == -1) {
 //        EV_WARN << "ISSUE: intermNodeIdx = -1 for msgId = " << currMsgId << "\n";
@@ -433,6 +540,33 @@ void RcNode::handleOutMessageTimer(OutMsgTimer *outtmsg){
     }
 }
 
+void RcNode::handleRxRateTimer(RxRateTimer *rxrtmsg){
+
+    float interval = config.RxRateSignalInterval;
+
+    float rateTemp = (float) numRxTemp / interval ;
+    float rateAsIntermTemp = (float) numRxAsIntermTemp / interval ;
+
+//    EV << "rateTemp = " << rateTemp ;
+
+    emit(rxRateSignal, rateTemp);
+    emit(rxRateAsIntermSignal, numRxAsIntermTemp);
+
+    RxRateTimer *newrxrtmsg = new RxRateTimer();
+    scheduleAt(simTime() + interval, newrxrtmsg);
+
+    numRxTemp = 0;
+    numRxAsIntermTemp = 0;
+
+}
+
+void RcNode::handleRateChangeTimer(RateChangeTimer *rctmsg){
+
+    if (getIndex() == 1){
+        bdOutRate *= 0.5;
+    }
+}
+
 void RcNode::handleMessage(cMessage *msg){
 
     if (msg->isSelfMessage()) {
@@ -455,6 +589,14 @@ void RcNode::handleMessage(cMessage *msg){
         else if(instanceof<AIMDTimer>(msg)){
             AIMDTimer *aimdtmsg = check_and_cast<AIMDTimer *>(msg);
             handleAIMDTimer(aimdtmsg);
+        }
+        else if(instanceof<RateChangeTimer>(msg)){
+            RateChangeTimer *rctmsg = check_and_cast<RateChangeTimer *>(msg);
+            handleRateChangeTimer(rctmsg);
+        }
+        else if(instanceof<RxRateTimer>(msg)){
+            RxRateTimer *rxrtmsg = check_and_cast<RxRateTimer *>(msg);
+            handleRxRateTimer(rxrtmsg);
         }
 
     }
@@ -496,7 +638,7 @@ void RcNode::handleOutMsg(RCMessage *msg){
 //    MaxMinMsg *mmmsg = check_and_cast<MaxMinMsg *>(msg);
 
     int msgId = msg->getId();
-//    std::pair<int,int> pair = std::pair<int,int>(mmmsg->getMsgId(), mmmsg->getDestination());
+//    pair<int,int> pair = pair<int,int>(mmmsg->getMsgId(), mmmsg->getDestination());
 
     if (outQueue.size() < config.OutQueueMaxSize){
         outMsgMap[msgId] = msg; // todo: should I duplicate the message here?
@@ -519,7 +661,7 @@ void RcNode::handleOutMsg(RCMessage *msg){
 
 // assumes that outQueue is not empty
 void RcNode::processNextOutMsg(){
-//    std::pair<int,int> pair = outQueue.front();
+//    pair<int,int> pair = outQueue.front();
     int outMsgId = outQueue.front();
 //    int outMsgDstIdx = pair.second;
     OutMsgTimer *outtmsg = new OutMsgTimer();
@@ -532,7 +674,7 @@ void RcNode::processNextOutMsg(){
 
 // assumes that inQueue is not empty
 void RcNode::processNextInMsg(){
-//    std::pair<int,int> pair = inQueue.front();
+//    pair<int,int> pair = inQueue.front();
 //    int inMsgType = pair.first;
     int inMsgId = inQueue.front();
     cMessage *msg = inMsgMap[inMsgId];

@@ -26,13 +26,6 @@ message MaxMinACK
     int destination; 
 }
 
-message ProbeMsg extends RCMessage {}
-
-message ProbeACK
-{
-    long msgId;
-}
-
 // only used as self messages
 
 message RCSelfMessage
@@ -63,20 +56,19 @@ message AckTimeOut
     int msgId;
 }
 
-message ProbeSelfTimer
-{
-	float msgTimer;
-	long msgId;
-}
-
-message ProbeAckTimeOut
-{
-    long msgId;
-}
-
 message AIMDTimer
 {
     float msgTimer;
     int msgId;
     int peerIdx;
+}
+
+message RxRateTimer
+{
+	float msgTimer;
+}
+
+message RateChangeTimer
+{
+ 	float msgTimer;   
 }

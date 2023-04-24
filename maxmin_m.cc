@@ -1263,679 +1263,6 @@ void MaxMinACKDescriptor::setFieldStructValuePointer(omnetpp::any_ptr object, in
     }
 }
 
-Register_Class(ProbeMsg)
-
-ProbeMsg::ProbeMsg(const char *name, short kind) : ::RCMessage(name, kind)
-{
-}
-
-ProbeMsg::ProbeMsg(const ProbeMsg& other) : ::RCMessage(other)
-{
-    copy(other);
-}
-
-ProbeMsg::~ProbeMsg()
-{
-}
-
-ProbeMsg& ProbeMsg::operator=(const ProbeMsg& other)
-{
-    if (this == &other) return *this;
-    ::RCMessage::operator=(other);
-    copy(other);
-    return *this;
-}
-
-void ProbeMsg::copy(const ProbeMsg& other)
-{
-}
-
-void ProbeMsg::parsimPack(omnetpp::cCommBuffer *b) const
-{
-    ::RCMessage::parsimPack(b);
-}
-
-void ProbeMsg::parsimUnpack(omnetpp::cCommBuffer *b)
-{
-    ::RCMessage::parsimUnpack(b);
-}
-
-class ProbeMsgDescriptor : public omnetpp::cClassDescriptor
-{
-  private:
-    mutable const char **propertyNames;
-    enum FieldConstants {
-    };
-  public:
-    ProbeMsgDescriptor();
-    virtual ~ProbeMsgDescriptor();
-
-    virtual bool doesSupport(omnetpp::cObject *obj) const override;
-    virtual const char **getPropertyNames() const override;
-    virtual const char *getProperty(const char *propertyName) const override;
-    virtual int getFieldCount() const override;
-    virtual const char *getFieldName(int field) const override;
-    virtual int findField(const char *fieldName) const override;
-    virtual unsigned int getFieldTypeFlags(int field) const override;
-    virtual const char *getFieldTypeString(int field) const override;
-    virtual const char **getFieldPropertyNames(int field) const override;
-    virtual const char *getFieldProperty(int field, const char *propertyName) const override;
-    virtual int getFieldArraySize(omnetpp::any_ptr object, int field) const override;
-    virtual void setFieldArraySize(omnetpp::any_ptr object, int field, int size) const override;
-
-    virtual const char *getFieldDynamicTypeString(omnetpp::any_ptr object, int field, int i) const override;
-    virtual std::string getFieldValueAsString(omnetpp::any_ptr object, int field, int i) const override;
-    virtual void setFieldValueAsString(omnetpp::any_ptr object, int field, int i, const char *value) const override;
-    virtual omnetpp::cValue getFieldValue(omnetpp::any_ptr object, int field, int i) const override;
-    virtual void setFieldValue(omnetpp::any_ptr object, int field, int i, const omnetpp::cValue& value) const override;
-
-    virtual const char *getFieldStructName(int field) const override;
-    virtual omnetpp::any_ptr getFieldStructValuePointer(omnetpp::any_ptr object, int field, int i) const override;
-    virtual void setFieldStructValuePointer(omnetpp::any_ptr object, int field, int i, omnetpp::any_ptr ptr) const override;
-};
-
-Register_ClassDescriptor(ProbeMsgDescriptor)
-
-ProbeMsgDescriptor::ProbeMsgDescriptor() : omnetpp::cClassDescriptor(omnetpp::opp_typename(typeid(ProbeMsg)), "RCMessage")
-{
-    propertyNames = nullptr;
-}
-
-ProbeMsgDescriptor::~ProbeMsgDescriptor()
-{
-    delete[] propertyNames;
-}
-
-bool ProbeMsgDescriptor::doesSupport(omnetpp::cObject *obj) const
-{
-    return dynamic_cast<ProbeMsg *>(obj)!=nullptr;
-}
-
-const char **ProbeMsgDescriptor::getPropertyNames() const
-{
-    if (!propertyNames) {
-        static const char *names[] = {  nullptr };
-        omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-        const char **baseNames = base ? base->getPropertyNames() : nullptr;
-        propertyNames = mergeLists(baseNames, names);
-    }
-    return propertyNames;
-}
-
-const char *ProbeMsgDescriptor::getProperty(const char *propertyName) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    return base ? base->getProperty(propertyName) : nullptr;
-}
-
-int ProbeMsgDescriptor::getFieldCount() const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    return base ? 0+base->getFieldCount() : 0;
-}
-
-unsigned int ProbeMsgDescriptor::getFieldTypeFlags(int field) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldTypeFlags(field);
-        field -= base->getFieldCount();
-    }
-    return 0;
-}
-
-const char *ProbeMsgDescriptor::getFieldName(int field) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldName(field);
-        field -= base->getFieldCount();
-    }
-    return nullptr;
-}
-
-int ProbeMsgDescriptor::findField(const char *fieldName) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    return base ? base->findField(fieldName) : -1;
-}
-
-const char *ProbeMsgDescriptor::getFieldTypeString(int field) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldTypeString(field);
-        field -= base->getFieldCount();
-    }
-    return nullptr;
-}
-
-const char **ProbeMsgDescriptor::getFieldPropertyNames(int field) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldPropertyNames(field);
-        field -= base->getFieldCount();
-    }
-    switch (field) {
-        default: return nullptr;
-    }
-}
-
-const char *ProbeMsgDescriptor::getFieldProperty(int field, const char *propertyName) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldProperty(field, propertyName);
-        field -= base->getFieldCount();
-    }
-    switch (field) {
-        default: return nullptr;
-    }
-}
-
-int ProbeMsgDescriptor::getFieldArraySize(omnetpp::any_ptr object, int field) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldArraySize(object, field);
-        field -= base->getFieldCount();
-    }
-    ProbeMsg *pp = omnetpp::fromAnyPtr<ProbeMsg>(object); (void)pp;
-    switch (field) {
-        default: return 0;
-    }
-}
-
-void ProbeMsgDescriptor::setFieldArraySize(omnetpp::any_ptr object, int field, int size) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount()){
-            base->setFieldArraySize(object, field, size);
-            return;
-        }
-        field -= base->getFieldCount();
-    }
-    ProbeMsg *pp = omnetpp::fromAnyPtr<ProbeMsg>(object); (void)pp;
-    switch (field) {
-        default: throw omnetpp::cRuntimeError("Cannot set array size of field %d of class 'ProbeMsg'", field);
-    }
-}
-
-const char *ProbeMsgDescriptor::getFieldDynamicTypeString(omnetpp::any_ptr object, int field, int i) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldDynamicTypeString(object,field,i);
-        field -= base->getFieldCount();
-    }
-    ProbeMsg *pp = omnetpp::fromAnyPtr<ProbeMsg>(object); (void)pp;
-    switch (field) {
-        default: return nullptr;
-    }
-}
-
-std::string ProbeMsgDescriptor::getFieldValueAsString(omnetpp::any_ptr object, int field, int i) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldValueAsString(object,field,i);
-        field -= base->getFieldCount();
-    }
-    ProbeMsg *pp = omnetpp::fromAnyPtr<ProbeMsg>(object); (void)pp;
-    switch (field) {
-        default: return "";
-    }
-}
-
-void ProbeMsgDescriptor::setFieldValueAsString(omnetpp::any_ptr object, int field, int i, const char *value) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount()){
-            base->setFieldValueAsString(object, field, i, value);
-            return;
-        }
-        field -= base->getFieldCount();
-    }
-    ProbeMsg *pp = omnetpp::fromAnyPtr<ProbeMsg>(object); (void)pp;
-    switch (field) {
-        default: throw omnetpp::cRuntimeError("Cannot set field %d of class 'ProbeMsg'", field);
-    }
-}
-
-omnetpp::cValue ProbeMsgDescriptor::getFieldValue(omnetpp::any_ptr object, int field, int i) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldValue(object,field,i);
-        field -= base->getFieldCount();
-    }
-    ProbeMsg *pp = omnetpp::fromAnyPtr<ProbeMsg>(object); (void)pp;
-    switch (field) {
-        default: throw omnetpp::cRuntimeError("Cannot return field %d of class 'ProbeMsg' as cValue -- field index out of range?", field);
-    }
-}
-
-void ProbeMsgDescriptor::setFieldValue(omnetpp::any_ptr object, int field, int i, const omnetpp::cValue& value) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount()){
-            base->setFieldValue(object, field, i, value);
-            return;
-        }
-        field -= base->getFieldCount();
-    }
-    ProbeMsg *pp = omnetpp::fromAnyPtr<ProbeMsg>(object); (void)pp;
-    switch (field) {
-        default: throw omnetpp::cRuntimeError("Cannot set field %d of class 'ProbeMsg'", field);
-    }
-}
-
-const char *ProbeMsgDescriptor::getFieldStructName(int field) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldStructName(field);
-        field -= base->getFieldCount();
-    }
-    return nullptr;
-}
-
-omnetpp::any_ptr ProbeMsgDescriptor::getFieldStructValuePointer(omnetpp::any_ptr object, int field, int i) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldStructValuePointer(object, field, i);
-        field -= base->getFieldCount();
-    }
-    ProbeMsg *pp = omnetpp::fromAnyPtr<ProbeMsg>(object); (void)pp;
-    switch (field) {
-        default: return omnetpp::any_ptr(nullptr);
-    }
-}
-
-void ProbeMsgDescriptor::setFieldStructValuePointer(omnetpp::any_ptr object, int field, int i, omnetpp::any_ptr ptr) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount()){
-            base->setFieldStructValuePointer(object, field, i, ptr);
-            return;
-        }
-        field -= base->getFieldCount();
-    }
-    ProbeMsg *pp = omnetpp::fromAnyPtr<ProbeMsg>(object); (void)pp;
-    switch (field) {
-        default: throw omnetpp::cRuntimeError("Cannot set field %d of class 'ProbeMsg'", field);
-    }
-}
-
-Register_Class(ProbeACK)
-
-ProbeACK::ProbeACK(const char *name, short kind) : ::omnetpp::cMessage(name, kind)
-{
-}
-
-ProbeACK::ProbeACK(const ProbeACK& other) : ::omnetpp::cMessage(other)
-{
-    copy(other);
-}
-
-ProbeACK::~ProbeACK()
-{
-}
-
-ProbeACK& ProbeACK::operator=(const ProbeACK& other)
-{
-    if (this == &other) return *this;
-    ::omnetpp::cMessage::operator=(other);
-    copy(other);
-    return *this;
-}
-
-void ProbeACK::copy(const ProbeACK& other)
-{
-    this->msgId = other.msgId;
-}
-
-void ProbeACK::parsimPack(omnetpp::cCommBuffer *b) const
-{
-    ::omnetpp::cMessage::parsimPack(b);
-    doParsimPacking(b,this->msgId);
-}
-
-void ProbeACK::parsimUnpack(omnetpp::cCommBuffer *b)
-{
-    ::omnetpp::cMessage::parsimUnpack(b);
-    doParsimUnpacking(b,this->msgId);
-}
-
-long ProbeACK::getMsgId() const
-{
-    return this->msgId;
-}
-
-void ProbeACK::setMsgId(long msgId)
-{
-    this->msgId = msgId;
-}
-
-class ProbeACKDescriptor : public omnetpp::cClassDescriptor
-{
-  private:
-    mutable const char **propertyNames;
-    enum FieldConstants {
-        FIELD_msgId,
-    };
-  public:
-    ProbeACKDescriptor();
-    virtual ~ProbeACKDescriptor();
-
-    virtual bool doesSupport(omnetpp::cObject *obj) const override;
-    virtual const char **getPropertyNames() const override;
-    virtual const char *getProperty(const char *propertyName) const override;
-    virtual int getFieldCount() const override;
-    virtual const char *getFieldName(int field) const override;
-    virtual int findField(const char *fieldName) const override;
-    virtual unsigned int getFieldTypeFlags(int field) const override;
-    virtual const char *getFieldTypeString(int field) const override;
-    virtual const char **getFieldPropertyNames(int field) const override;
-    virtual const char *getFieldProperty(int field, const char *propertyName) const override;
-    virtual int getFieldArraySize(omnetpp::any_ptr object, int field) const override;
-    virtual void setFieldArraySize(omnetpp::any_ptr object, int field, int size) const override;
-
-    virtual const char *getFieldDynamicTypeString(omnetpp::any_ptr object, int field, int i) const override;
-    virtual std::string getFieldValueAsString(omnetpp::any_ptr object, int field, int i) const override;
-    virtual void setFieldValueAsString(omnetpp::any_ptr object, int field, int i, const char *value) const override;
-    virtual omnetpp::cValue getFieldValue(omnetpp::any_ptr object, int field, int i) const override;
-    virtual void setFieldValue(omnetpp::any_ptr object, int field, int i, const omnetpp::cValue& value) const override;
-
-    virtual const char *getFieldStructName(int field) const override;
-    virtual omnetpp::any_ptr getFieldStructValuePointer(omnetpp::any_ptr object, int field, int i) const override;
-    virtual void setFieldStructValuePointer(omnetpp::any_ptr object, int field, int i, omnetpp::any_ptr ptr) const override;
-};
-
-Register_ClassDescriptor(ProbeACKDescriptor)
-
-ProbeACKDescriptor::ProbeACKDescriptor() : omnetpp::cClassDescriptor(omnetpp::opp_typename(typeid(ProbeACK)), "omnetpp::cMessage")
-{
-    propertyNames = nullptr;
-}
-
-ProbeACKDescriptor::~ProbeACKDescriptor()
-{
-    delete[] propertyNames;
-}
-
-bool ProbeACKDescriptor::doesSupport(omnetpp::cObject *obj) const
-{
-    return dynamic_cast<ProbeACK *>(obj)!=nullptr;
-}
-
-const char **ProbeACKDescriptor::getPropertyNames() const
-{
-    if (!propertyNames) {
-        static const char *names[] = {  nullptr };
-        omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-        const char **baseNames = base ? base->getPropertyNames() : nullptr;
-        propertyNames = mergeLists(baseNames, names);
-    }
-    return propertyNames;
-}
-
-const char *ProbeACKDescriptor::getProperty(const char *propertyName) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    return base ? base->getProperty(propertyName) : nullptr;
-}
-
-int ProbeACKDescriptor::getFieldCount() const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    return base ? 1+base->getFieldCount() : 1;
-}
-
-unsigned int ProbeACKDescriptor::getFieldTypeFlags(int field) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldTypeFlags(field);
-        field -= base->getFieldCount();
-    }
-    static unsigned int fieldTypeFlags[] = {
-        FD_ISEDITABLE,    // FIELD_msgId
-    };
-    return (field >= 0 && field < 1) ? fieldTypeFlags[field] : 0;
-}
-
-const char *ProbeACKDescriptor::getFieldName(int field) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldName(field);
-        field -= base->getFieldCount();
-    }
-    static const char *fieldNames[] = {
-        "msgId",
-    };
-    return (field >= 0 && field < 1) ? fieldNames[field] : nullptr;
-}
-
-int ProbeACKDescriptor::findField(const char *fieldName) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    int baseIndex = base ? base->getFieldCount() : 0;
-    if (strcmp(fieldName, "msgId") == 0) return baseIndex + 0;
-    return base ? base->findField(fieldName) : -1;
-}
-
-const char *ProbeACKDescriptor::getFieldTypeString(int field) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldTypeString(field);
-        field -= base->getFieldCount();
-    }
-    static const char *fieldTypeStrings[] = {
-        "long",    // FIELD_msgId
-    };
-    return (field >= 0 && field < 1) ? fieldTypeStrings[field] : nullptr;
-}
-
-const char **ProbeACKDescriptor::getFieldPropertyNames(int field) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldPropertyNames(field);
-        field -= base->getFieldCount();
-    }
-    switch (field) {
-        default: return nullptr;
-    }
-}
-
-const char *ProbeACKDescriptor::getFieldProperty(int field, const char *propertyName) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldProperty(field, propertyName);
-        field -= base->getFieldCount();
-    }
-    switch (field) {
-        default: return nullptr;
-    }
-}
-
-int ProbeACKDescriptor::getFieldArraySize(omnetpp::any_ptr object, int field) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldArraySize(object, field);
-        field -= base->getFieldCount();
-    }
-    ProbeACK *pp = omnetpp::fromAnyPtr<ProbeACK>(object); (void)pp;
-    switch (field) {
-        default: return 0;
-    }
-}
-
-void ProbeACKDescriptor::setFieldArraySize(omnetpp::any_ptr object, int field, int size) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount()){
-            base->setFieldArraySize(object, field, size);
-            return;
-        }
-        field -= base->getFieldCount();
-    }
-    ProbeACK *pp = omnetpp::fromAnyPtr<ProbeACK>(object); (void)pp;
-    switch (field) {
-        default: throw omnetpp::cRuntimeError("Cannot set array size of field %d of class 'ProbeACK'", field);
-    }
-}
-
-const char *ProbeACKDescriptor::getFieldDynamicTypeString(omnetpp::any_ptr object, int field, int i) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldDynamicTypeString(object,field,i);
-        field -= base->getFieldCount();
-    }
-    ProbeACK *pp = omnetpp::fromAnyPtr<ProbeACK>(object); (void)pp;
-    switch (field) {
-        default: return nullptr;
-    }
-}
-
-std::string ProbeACKDescriptor::getFieldValueAsString(omnetpp::any_ptr object, int field, int i) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldValueAsString(object,field,i);
-        field -= base->getFieldCount();
-    }
-    ProbeACK *pp = omnetpp::fromAnyPtr<ProbeACK>(object); (void)pp;
-    switch (field) {
-        case FIELD_msgId: return long2string(pp->getMsgId());
-        default: return "";
-    }
-}
-
-void ProbeACKDescriptor::setFieldValueAsString(omnetpp::any_ptr object, int field, int i, const char *value) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount()){
-            base->setFieldValueAsString(object, field, i, value);
-            return;
-        }
-        field -= base->getFieldCount();
-    }
-    ProbeACK *pp = omnetpp::fromAnyPtr<ProbeACK>(object); (void)pp;
-    switch (field) {
-        case FIELD_msgId: pp->setMsgId(string2long(value)); break;
-        default: throw omnetpp::cRuntimeError("Cannot set field %d of class 'ProbeACK'", field);
-    }
-}
-
-omnetpp::cValue ProbeACKDescriptor::getFieldValue(omnetpp::any_ptr object, int field, int i) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldValue(object,field,i);
-        field -= base->getFieldCount();
-    }
-    ProbeACK *pp = omnetpp::fromAnyPtr<ProbeACK>(object); (void)pp;
-    switch (field) {
-        case FIELD_msgId: return (omnetpp::intval_t)(pp->getMsgId());
-        default: throw omnetpp::cRuntimeError("Cannot return field %d of class 'ProbeACK' as cValue -- field index out of range?", field);
-    }
-}
-
-void ProbeACKDescriptor::setFieldValue(omnetpp::any_ptr object, int field, int i, const omnetpp::cValue& value) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount()){
-            base->setFieldValue(object, field, i, value);
-            return;
-        }
-        field -= base->getFieldCount();
-    }
-    ProbeACK *pp = omnetpp::fromAnyPtr<ProbeACK>(object); (void)pp;
-    switch (field) {
-        case FIELD_msgId: pp->setMsgId(omnetpp::checked_int_cast<long>(value.intValue())); break;
-        default: throw omnetpp::cRuntimeError("Cannot set field %d of class 'ProbeACK'", field);
-    }
-}
-
-const char *ProbeACKDescriptor::getFieldStructName(int field) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldStructName(field);
-        field -= base->getFieldCount();
-    }
-    switch (field) {
-        default: return nullptr;
-    };
-}
-
-omnetpp::any_ptr ProbeACKDescriptor::getFieldStructValuePointer(omnetpp::any_ptr object, int field, int i) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldStructValuePointer(object, field, i);
-        field -= base->getFieldCount();
-    }
-    ProbeACK *pp = omnetpp::fromAnyPtr<ProbeACK>(object); (void)pp;
-    switch (field) {
-        default: return omnetpp::any_ptr(nullptr);
-    }
-}
-
-void ProbeACKDescriptor::setFieldStructValuePointer(omnetpp::any_ptr object, int field, int i, omnetpp::any_ptr ptr) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount()){
-            base->setFieldStructValuePointer(object, field, i, ptr);
-            return;
-        }
-        field -= base->getFieldCount();
-    }
-    ProbeACK *pp = omnetpp::fromAnyPtr<ProbeACK>(object); (void)pp;
-    switch (field) {
-        default: throw omnetpp::cRuntimeError("Cannot set field %d of class 'ProbeACK'", field);
-    }
-}
-
 Register_Class(RCSelfMessage)
 
 RCSelfMessage::RCSelfMessage(const char *name, short kind) : ::omnetpp::cMessage(name, kind)
@@ -3762,732 +3089,6 @@ void AckTimeOutDescriptor::setFieldStructValuePointer(omnetpp::any_ptr object, i
     }
 }
 
-Register_Class(ProbeSelfTimer)
-
-ProbeSelfTimer::ProbeSelfTimer(const char *name, short kind) : ::omnetpp::cMessage(name, kind)
-{
-}
-
-ProbeSelfTimer::ProbeSelfTimer(const ProbeSelfTimer& other) : ::omnetpp::cMessage(other)
-{
-    copy(other);
-}
-
-ProbeSelfTimer::~ProbeSelfTimer()
-{
-}
-
-ProbeSelfTimer& ProbeSelfTimer::operator=(const ProbeSelfTimer& other)
-{
-    if (this == &other) return *this;
-    ::omnetpp::cMessage::operator=(other);
-    copy(other);
-    return *this;
-}
-
-void ProbeSelfTimer::copy(const ProbeSelfTimer& other)
-{
-    this->msgTimer = other.msgTimer;
-    this->msgId = other.msgId;
-}
-
-void ProbeSelfTimer::parsimPack(omnetpp::cCommBuffer *b) const
-{
-    ::omnetpp::cMessage::parsimPack(b);
-    doParsimPacking(b,this->msgTimer);
-    doParsimPacking(b,this->msgId);
-}
-
-void ProbeSelfTimer::parsimUnpack(omnetpp::cCommBuffer *b)
-{
-    ::omnetpp::cMessage::parsimUnpack(b);
-    doParsimUnpacking(b,this->msgTimer);
-    doParsimUnpacking(b,this->msgId);
-}
-
-float ProbeSelfTimer::getMsgTimer() const
-{
-    return this->msgTimer;
-}
-
-void ProbeSelfTimer::setMsgTimer(float msgTimer)
-{
-    this->msgTimer = msgTimer;
-}
-
-long ProbeSelfTimer::getMsgId() const
-{
-    return this->msgId;
-}
-
-void ProbeSelfTimer::setMsgId(long msgId)
-{
-    this->msgId = msgId;
-}
-
-class ProbeSelfTimerDescriptor : public omnetpp::cClassDescriptor
-{
-  private:
-    mutable const char **propertyNames;
-    enum FieldConstants {
-        FIELD_msgTimer,
-        FIELD_msgId,
-    };
-  public:
-    ProbeSelfTimerDescriptor();
-    virtual ~ProbeSelfTimerDescriptor();
-
-    virtual bool doesSupport(omnetpp::cObject *obj) const override;
-    virtual const char **getPropertyNames() const override;
-    virtual const char *getProperty(const char *propertyName) const override;
-    virtual int getFieldCount() const override;
-    virtual const char *getFieldName(int field) const override;
-    virtual int findField(const char *fieldName) const override;
-    virtual unsigned int getFieldTypeFlags(int field) const override;
-    virtual const char *getFieldTypeString(int field) const override;
-    virtual const char **getFieldPropertyNames(int field) const override;
-    virtual const char *getFieldProperty(int field, const char *propertyName) const override;
-    virtual int getFieldArraySize(omnetpp::any_ptr object, int field) const override;
-    virtual void setFieldArraySize(omnetpp::any_ptr object, int field, int size) const override;
-
-    virtual const char *getFieldDynamicTypeString(omnetpp::any_ptr object, int field, int i) const override;
-    virtual std::string getFieldValueAsString(omnetpp::any_ptr object, int field, int i) const override;
-    virtual void setFieldValueAsString(omnetpp::any_ptr object, int field, int i, const char *value) const override;
-    virtual omnetpp::cValue getFieldValue(omnetpp::any_ptr object, int field, int i) const override;
-    virtual void setFieldValue(omnetpp::any_ptr object, int field, int i, const omnetpp::cValue& value) const override;
-
-    virtual const char *getFieldStructName(int field) const override;
-    virtual omnetpp::any_ptr getFieldStructValuePointer(omnetpp::any_ptr object, int field, int i) const override;
-    virtual void setFieldStructValuePointer(omnetpp::any_ptr object, int field, int i, omnetpp::any_ptr ptr) const override;
-};
-
-Register_ClassDescriptor(ProbeSelfTimerDescriptor)
-
-ProbeSelfTimerDescriptor::ProbeSelfTimerDescriptor() : omnetpp::cClassDescriptor(omnetpp::opp_typename(typeid(ProbeSelfTimer)), "omnetpp::cMessage")
-{
-    propertyNames = nullptr;
-}
-
-ProbeSelfTimerDescriptor::~ProbeSelfTimerDescriptor()
-{
-    delete[] propertyNames;
-}
-
-bool ProbeSelfTimerDescriptor::doesSupport(omnetpp::cObject *obj) const
-{
-    return dynamic_cast<ProbeSelfTimer *>(obj)!=nullptr;
-}
-
-const char **ProbeSelfTimerDescriptor::getPropertyNames() const
-{
-    if (!propertyNames) {
-        static const char *names[] = {  nullptr };
-        omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-        const char **baseNames = base ? base->getPropertyNames() : nullptr;
-        propertyNames = mergeLists(baseNames, names);
-    }
-    return propertyNames;
-}
-
-const char *ProbeSelfTimerDescriptor::getProperty(const char *propertyName) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    return base ? base->getProperty(propertyName) : nullptr;
-}
-
-int ProbeSelfTimerDescriptor::getFieldCount() const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    return base ? 2+base->getFieldCount() : 2;
-}
-
-unsigned int ProbeSelfTimerDescriptor::getFieldTypeFlags(int field) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldTypeFlags(field);
-        field -= base->getFieldCount();
-    }
-    static unsigned int fieldTypeFlags[] = {
-        FD_ISEDITABLE,    // FIELD_msgTimer
-        FD_ISEDITABLE,    // FIELD_msgId
-    };
-    return (field >= 0 && field < 2) ? fieldTypeFlags[field] : 0;
-}
-
-const char *ProbeSelfTimerDescriptor::getFieldName(int field) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldName(field);
-        field -= base->getFieldCount();
-    }
-    static const char *fieldNames[] = {
-        "msgTimer",
-        "msgId",
-    };
-    return (field >= 0 && field < 2) ? fieldNames[field] : nullptr;
-}
-
-int ProbeSelfTimerDescriptor::findField(const char *fieldName) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    int baseIndex = base ? base->getFieldCount() : 0;
-    if (strcmp(fieldName, "msgTimer") == 0) return baseIndex + 0;
-    if (strcmp(fieldName, "msgId") == 0) return baseIndex + 1;
-    return base ? base->findField(fieldName) : -1;
-}
-
-const char *ProbeSelfTimerDescriptor::getFieldTypeString(int field) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldTypeString(field);
-        field -= base->getFieldCount();
-    }
-    static const char *fieldTypeStrings[] = {
-        "float",    // FIELD_msgTimer
-        "long",    // FIELD_msgId
-    };
-    return (field >= 0 && field < 2) ? fieldTypeStrings[field] : nullptr;
-}
-
-const char **ProbeSelfTimerDescriptor::getFieldPropertyNames(int field) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldPropertyNames(field);
-        field -= base->getFieldCount();
-    }
-    switch (field) {
-        default: return nullptr;
-    }
-}
-
-const char *ProbeSelfTimerDescriptor::getFieldProperty(int field, const char *propertyName) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldProperty(field, propertyName);
-        field -= base->getFieldCount();
-    }
-    switch (field) {
-        default: return nullptr;
-    }
-}
-
-int ProbeSelfTimerDescriptor::getFieldArraySize(omnetpp::any_ptr object, int field) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldArraySize(object, field);
-        field -= base->getFieldCount();
-    }
-    ProbeSelfTimer *pp = omnetpp::fromAnyPtr<ProbeSelfTimer>(object); (void)pp;
-    switch (field) {
-        default: return 0;
-    }
-}
-
-void ProbeSelfTimerDescriptor::setFieldArraySize(omnetpp::any_ptr object, int field, int size) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount()){
-            base->setFieldArraySize(object, field, size);
-            return;
-        }
-        field -= base->getFieldCount();
-    }
-    ProbeSelfTimer *pp = omnetpp::fromAnyPtr<ProbeSelfTimer>(object); (void)pp;
-    switch (field) {
-        default: throw omnetpp::cRuntimeError("Cannot set array size of field %d of class 'ProbeSelfTimer'", field);
-    }
-}
-
-const char *ProbeSelfTimerDescriptor::getFieldDynamicTypeString(omnetpp::any_ptr object, int field, int i) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldDynamicTypeString(object,field,i);
-        field -= base->getFieldCount();
-    }
-    ProbeSelfTimer *pp = omnetpp::fromAnyPtr<ProbeSelfTimer>(object); (void)pp;
-    switch (field) {
-        default: return nullptr;
-    }
-}
-
-std::string ProbeSelfTimerDescriptor::getFieldValueAsString(omnetpp::any_ptr object, int field, int i) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldValueAsString(object,field,i);
-        field -= base->getFieldCount();
-    }
-    ProbeSelfTimer *pp = omnetpp::fromAnyPtr<ProbeSelfTimer>(object); (void)pp;
-    switch (field) {
-        case FIELD_msgTimer: return double2string(pp->getMsgTimer());
-        case FIELD_msgId: return long2string(pp->getMsgId());
-        default: return "";
-    }
-}
-
-void ProbeSelfTimerDescriptor::setFieldValueAsString(omnetpp::any_ptr object, int field, int i, const char *value) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount()){
-            base->setFieldValueAsString(object, field, i, value);
-            return;
-        }
-        field -= base->getFieldCount();
-    }
-    ProbeSelfTimer *pp = omnetpp::fromAnyPtr<ProbeSelfTimer>(object); (void)pp;
-    switch (field) {
-        case FIELD_msgTimer: pp->setMsgTimer(string2double(value)); break;
-        case FIELD_msgId: pp->setMsgId(string2long(value)); break;
-        default: throw omnetpp::cRuntimeError("Cannot set field %d of class 'ProbeSelfTimer'", field);
-    }
-}
-
-omnetpp::cValue ProbeSelfTimerDescriptor::getFieldValue(omnetpp::any_ptr object, int field, int i) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldValue(object,field,i);
-        field -= base->getFieldCount();
-    }
-    ProbeSelfTimer *pp = omnetpp::fromAnyPtr<ProbeSelfTimer>(object); (void)pp;
-    switch (field) {
-        case FIELD_msgTimer: return (double)(pp->getMsgTimer());
-        case FIELD_msgId: return (omnetpp::intval_t)(pp->getMsgId());
-        default: throw omnetpp::cRuntimeError("Cannot return field %d of class 'ProbeSelfTimer' as cValue -- field index out of range?", field);
-    }
-}
-
-void ProbeSelfTimerDescriptor::setFieldValue(omnetpp::any_ptr object, int field, int i, const omnetpp::cValue& value) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount()){
-            base->setFieldValue(object, field, i, value);
-            return;
-        }
-        field -= base->getFieldCount();
-    }
-    ProbeSelfTimer *pp = omnetpp::fromAnyPtr<ProbeSelfTimer>(object); (void)pp;
-    switch (field) {
-        case FIELD_msgTimer: pp->setMsgTimer(static_cast<float>(value.doubleValue())); break;
-        case FIELD_msgId: pp->setMsgId(omnetpp::checked_int_cast<long>(value.intValue())); break;
-        default: throw omnetpp::cRuntimeError("Cannot set field %d of class 'ProbeSelfTimer'", field);
-    }
-}
-
-const char *ProbeSelfTimerDescriptor::getFieldStructName(int field) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldStructName(field);
-        field -= base->getFieldCount();
-    }
-    switch (field) {
-        default: return nullptr;
-    };
-}
-
-omnetpp::any_ptr ProbeSelfTimerDescriptor::getFieldStructValuePointer(omnetpp::any_ptr object, int field, int i) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldStructValuePointer(object, field, i);
-        field -= base->getFieldCount();
-    }
-    ProbeSelfTimer *pp = omnetpp::fromAnyPtr<ProbeSelfTimer>(object); (void)pp;
-    switch (field) {
-        default: return omnetpp::any_ptr(nullptr);
-    }
-}
-
-void ProbeSelfTimerDescriptor::setFieldStructValuePointer(omnetpp::any_ptr object, int field, int i, omnetpp::any_ptr ptr) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount()){
-            base->setFieldStructValuePointer(object, field, i, ptr);
-            return;
-        }
-        field -= base->getFieldCount();
-    }
-    ProbeSelfTimer *pp = omnetpp::fromAnyPtr<ProbeSelfTimer>(object); (void)pp;
-    switch (field) {
-        default: throw omnetpp::cRuntimeError("Cannot set field %d of class 'ProbeSelfTimer'", field);
-    }
-}
-
-Register_Class(ProbeAckTimeOut)
-
-ProbeAckTimeOut::ProbeAckTimeOut(const char *name, short kind) : ::omnetpp::cMessage(name, kind)
-{
-}
-
-ProbeAckTimeOut::ProbeAckTimeOut(const ProbeAckTimeOut& other) : ::omnetpp::cMessage(other)
-{
-    copy(other);
-}
-
-ProbeAckTimeOut::~ProbeAckTimeOut()
-{
-}
-
-ProbeAckTimeOut& ProbeAckTimeOut::operator=(const ProbeAckTimeOut& other)
-{
-    if (this == &other) return *this;
-    ::omnetpp::cMessage::operator=(other);
-    copy(other);
-    return *this;
-}
-
-void ProbeAckTimeOut::copy(const ProbeAckTimeOut& other)
-{
-    this->msgId = other.msgId;
-}
-
-void ProbeAckTimeOut::parsimPack(omnetpp::cCommBuffer *b) const
-{
-    ::omnetpp::cMessage::parsimPack(b);
-    doParsimPacking(b,this->msgId);
-}
-
-void ProbeAckTimeOut::parsimUnpack(omnetpp::cCommBuffer *b)
-{
-    ::omnetpp::cMessage::parsimUnpack(b);
-    doParsimUnpacking(b,this->msgId);
-}
-
-long ProbeAckTimeOut::getMsgId() const
-{
-    return this->msgId;
-}
-
-void ProbeAckTimeOut::setMsgId(long msgId)
-{
-    this->msgId = msgId;
-}
-
-class ProbeAckTimeOutDescriptor : public omnetpp::cClassDescriptor
-{
-  private:
-    mutable const char **propertyNames;
-    enum FieldConstants {
-        FIELD_msgId,
-    };
-  public:
-    ProbeAckTimeOutDescriptor();
-    virtual ~ProbeAckTimeOutDescriptor();
-
-    virtual bool doesSupport(omnetpp::cObject *obj) const override;
-    virtual const char **getPropertyNames() const override;
-    virtual const char *getProperty(const char *propertyName) const override;
-    virtual int getFieldCount() const override;
-    virtual const char *getFieldName(int field) const override;
-    virtual int findField(const char *fieldName) const override;
-    virtual unsigned int getFieldTypeFlags(int field) const override;
-    virtual const char *getFieldTypeString(int field) const override;
-    virtual const char **getFieldPropertyNames(int field) const override;
-    virtual const char *getFieldProperty(int field, const char *propertyName) const override;
-    virtual int getFieldArraySize(omnetpp::any_ptr object, int field) const override;
-    virtual void setFieldArraySize(omnetpp::any_ptr object, int field, int size) const override;
-
-    virtual const char *getFieldDynamicTypeString(omnetpp::any_ptr object, int field, int i) const override;
-    virtual std::string getFieldValueAsString(omnetpp::any_ptr object, int field, int i) const override;
-    virtual void setFieldValueAsString(omnetpp::any_ptr object, int field, int i, const char *value) const override;
-    virtual omnetpp::cValue getFieldValue(omnetpp::any_ptr object, int field, int i) const override;
-    virtual void setFieldValue(omnetpp::any_ptr object, int field, int i, const omnetpp::cValue& value) const override;
-
-    virtual const char *getFieldStructName(int field) const override;
-    virtual omnetpp::any_ptr getFieldStructValuePointer(omnetpp::any_ptr object, int field, int i) const override;
-    virtual void setFieldStructValuePointer(omnetpp::any_ptr object, int field, int i, omnetpp::any_ptr ptr) const override;
-};
-
-Register_ClassDescriptor(ProbeAckTimeOutDescriptor)
-
-ProbeAckTimeOutDescriptor::ProbeAckTimeOutDescriptor() : omnetpp::cClassDescriptor(omnetpp::opp_typename(typeid(ProbeAckTimeOut)), "omnetpp::cMessage")
-{
-    propertyNames = nullptr;
-}
-
-ProbeAckTimeOutDescriptor::~ProbeAckTimeOutDescriptor()
-{
-    delete[] propertyNames;
-}
-
-bool ProbeAckTimeOutDescriptor::doesSupport(omnetpp::cObject *obj) const
-{
-    return dynamic_cast<ProbeAckTimeOut *>(obj)!=nullptr;
-}
-
-const char **ProbeAckTimeOutDescriptor::getPropertyNames() const
-{
-    if (!propertyNames) {
-        static const char *names[] = {  nullptr };
-        omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-        const char **baseNames = base ? base->getPropertyNames() : nullptr;
-        propertyNames = mergeLists(baseNames, names);
-    }
-    return propertyNames;
-}
-
-const char *ProbeAckTimeOutDescriptor::getProperty(const char *propertyName) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    return base ? base->getProperty(propertyName) : nullptr;
-}
-
-int ProbeAckTimeOutDescriptor::getFieldCount() const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    return base ? 1+base->getFieldCount() : 1;
-}
-
-unsigned int ProbeAckTimeOutDescriptor::getFieldTypeFlags(int field) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldTypeFlags(field);
-        field -= base->getFieldCount();
-    }
-    static unsigned int fieldTypeFlags[] = {
-        FD_ISEDITABLE,    // FIELD_msgId
-    };
-    return (field >= 0 && field < 1) ? fieldTypeFlags[field] : 0;
-}
-
-const char *ProbeAckTimeOutDescriptor::getFieldName(int field) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldName(field);
-        field -= base->getFieldCount();
-    }
-    static const char *fieldNames[] = {
-        "msgId",
-    };
-    return (field >= 0 && field < 1) ? fieldNames[field] : nullptr;
-}
-
-int ProbeAckTimeOutDescriptor::findField(const char *fieldName) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    int baseIndex = base ? base->getFieldCount() : 0;
-    if (strcmp(fieldName, "msgId") == 0) return baseIndex + 0;
-    return base ? base->findField(fieldName) : -1;
-}
-
-const char *ProbeAckTimeOutDescriptor::getFieldTypeString(int field) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldTypeString(field);
-        field -= base->getFieldCount();
-    }
-    static const char *fieldTypeStrings[] = {
-        "long",    // FIELD_msgId
-    };
-    return (field >= 0 && field < 1) ? fieldTypeStrings[field] : nullptr;
-}
-
-const char **ProbeAckTimeOutDescriptor::getFieldPropertyNames(int field) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldPropertyNames(field);
-        field -= base->getFieldCount();
-    }
-    switch (field) {
-        default: return nullptr;
-    }
-}
-
-const char *ProbeAckTimeOutDescriptor::getFieldProperty(int field, const char *propertyName) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldProperty(field, propertyName);
-        field -= base->getFieldCount();
-    }
-    switch (field) {
-        default: return nullptr;
-    }
-}
-
-int ProbeAckTimeOutDescriptor::getFieldArraySize(omnetpp::any_ptr object, int field) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldArraySize(object, field);
-        field -= base->getFieldCount();
-    }
-    ProbeAckTimeOut *pp = omnetpp::fromAnyPtr<ProbeAckTimeOut>(object); (void)pp;
-    switch (field) {
-        default: return 0;
-    }
-}
-
-void ProbeAckTimeOutDescriptor::setFieldArraySize(omnetpp::any_ptr object, int field, int size) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount()){
-            base->setFieldArraySize(object, field, size);
-            return;
-        }
-        field -= base->getFieldCount();
-    }
-    ProbeAckTimeOut *pp = omnetpp::fromAnyPtr<ProbeAckTimeOut>(object); (void)pp;
-    switch (field) {
-        default: throw omnetpp::cRuntimeError("Cannot set array size of field %d of class 'ProbeAckTimeOut'", field);
-    }
-}
-
-const char *ProbeAckTimeOutDescriptor::getFieldDynamicTypeString(omnetpp::any_ptr object, int field, int i) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldDynamicTypeString(object,field,i);
-        field -= base->getFieldCount();
-    }
-    ProbeAckTimeOut *pp = omnetpp::fromAnyPtr<ProbeAckTimeOut>(object); (void)pp;
-    switch (field) {
-        default: return nullptr;
-    }
-}
-
-std::string ProbeAckTimeOutDescriptor::getFieldValueAsString(omnetpp::any_ptr object, int field, int i) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldValueAsString(object,field,i);
-        field -= base->getFieldCount();
-    }
-    ProbeAckTimeOut *pp = omnetpp::fromAnyPtr<ProbeAckTimeOut>(object); (void)pp;
-    switch (field) {
-        case FIELD_msgId: return long2string(pp->getMsgId());
-        default: return "";
-    }
-}
-
-void ProbeAckTimeOutDescriptor::setFieldValueAsString(omnetpp::any_ptr object, int field, int i, const char *value) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount()){
-            base->setFieldValueAsString(object, field, i, value);
-            return;
-        }
-        field -= base->getFieldCount();
-    }
-    ProbeAckTimeOut *pp = omnetpp::fromAnyPtr<ProbeAckTimeOut>(object); (void)pp;
-    switch (field) {
-        case FIELD_msgId: pp->setMsgId(string2long(value)); break;
-        default: throw omnetpp::cRuntimeError("Cannot set field %d of class 'ProbeAckTimeOut'", field);
-    }
-}
-
-omnetpp::cValue ProbeAckTimeOutDescriptor::getFieldValue(omnetpp::any_ptr object, int field, int i) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldValue(object,field,i);
-        field -= base->getFieldCount();
-    }
-    ProbeAckTimeOut *pp = omnetpp::fromAnyPtr<ProbeAckTimeOut>(object); (void)pp;
-    switch (field) {
-        case FIELD_msgId: return (omnetpp::intval_t)(pp->getMsgId());
-        default: throw omnetpp::cRuntimeError("Cannot return field %d of class 'ProbeAckTimeOut' as cValue -- field index out of range?", field);
-    }
-}
-
-void ProbeAckTimeOutDescriptor::setFieldValue(omnetpp::any_ptr object, int field, int i, const omnetpp::cValue& value) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount()){
-            base->setFieldValue(object, field, i, value);
-            return;
-        }
-        field -= base->getFieldCount();
-    }
-    ProbeAckTimeOut *pp = omnetpp::fromAnyPtr<ProbeAckTimeOut>(object); (void)pp;
-    switch (field) {
-        case FIELD_msgId: pp->setMsgId(omnetpp::checked_int_cast<long>(value.intValue())); break;
-        default: throw omnetpp::cRuntimeError("Cannot set field %d of class 'ProbeAckTimeOut'", field);
-    }
-}
-
-const char *ProbeAckTimeOutDescriptor::getFieldStructName(int field) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldStructName(field);
-        field -= base->getFieldCount();
-    }
-    switch (field) {
-        default: return nullptr;
-    };
-}
-
-omnetpp::any_ptr ProbeAckTimeOutDescriptor::getFieldStructValuePointer(omnetpp::any_ptr object, int field, int i) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount())
-            return base->getFieldStructValuePointer(object, field, i);
-        field -= base->getFieldCount();
-    }
-    ProbeAckTimeOut *pp = omnetpp::fromAnyPtr<ProbeAckTimeOut>(object); (void)pp;
-    switch (field) {
-        default: return omnetpp::any_ptr(nullptr);
-    }
-}
-
-void ProbeAckTimeOutDescriptor::setFieldStructValuePointer(omnetpp::any_ptr object, int field, int i, omnetpp::any_ptr ptr) const
-{
-    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    if (base) {
-        if (field < base->getFieldCount()){
-            base->setFieldStructValuePointer(object, field, i, ptr);
-            return;
-        }
-        field -= base->getFieldCount();
-    }
-    ProbeAckTimeOut *pp = omnetpp::fromAnyPtr<ProbeAckTimeOut>(object); (void)pp;
-    switch (field) {
-        default: throw omnetpp::cRuntimeError("Cannot set field %d of class 'ProbeAckTimeOut'", field);
-    }
-}
-
 Register_Class(AIMDTimer)
 
 AIMDTimer::AIMDTimer(const char *name, short kind) : ::omnetpp::cMessage(name, kind)
@@ -4881,6 +3482,710 @@ void AIMDTimerDescriptor::setFieldStructValuePointer(omnetpp::any_ptr object, in
     AIMDTimer *pp = omnetpp::fromAnyPtr<AIMDTimer>(object); (void)pp;
     switch (field) {
         default: throw omnetpp::cRuntimeError("Cannot set field %d of class 'AIMDTimer'", field);
+    }
+}
+
+Register_Class(RxRateTimer)
+
+RxRateTimer::RxRateTimer(const char *name, short kind) : ::omnetpp::cMessage(name, kind)
+{
+}
+
+RxRateTimer::RxRateTimer(const RxRateTimer& other) : ::omnetpp::cMessage(other)
+{
+    copy(other);
+}
+
+RxRateTimer::~RxRateTimer()
+{
+}
+
+RxRateTimer& RxRateTimer::operator=(const RxRateTimer& other)
+{
+    if (this == &other) return *this;
+    ::omnetpp::cMessage::operator=(other);
+    copy(other);
+    return *this;
+}
+
+void RxRateTimer::copy(const RxRateTimer& other)
+{
+    this->msgTimer = other.msgTimer;
+}
+
+void RxRateTimer::parsimPack(omnetpp::cCommBuffer *b) const
+{
+    ::omnetpp::cMessage::parsimPack(b);
+    doParsimPacking(b,this->msgTimer);
+}
+
+void RxRateTimer::parsimUnpack(omnetpp::cCommBuffer *b)
+{
+    ::omnetpp::cMessage::parsimUnpack(b);
+    doParsimUnpacking(b,this->msgTimer);
+}
+
+float RxRateTimer::getMsgTimer() const
+{
+    return this->msgTimer;
+}
+
+void RxRateTimer::setMsgTimer(float msgTimer)
+{
+    this->msgTimer = msgTimer;
+}
+
+class RxRateTimerDescriptor : public omnetpp::cClassDescriptor
+{
+  private:
+    mutable const char **propertyNames;
+    enum FieldConstants {
+        FIELD_msgTimer,
+    };
+  public:
+    RxRateTimerDescriptor();
+    virtual ~RxRateTimerDescriptor();
+
+    virtual bool doesSupport(omnetpp::cObject *obj) const override;
+    virtual const char **getPropertyNames() const override;
+    virtual const char *getProperty(const char *propertyName) const override;
+    virtual int getFieldCount() const override;
+    virtual const char *getFieldName(int field) const override;
+    virtual int findField(const char *fieldName) const override;
+    virtual unsigned int getFieldTypeFlags(int field) const override;
+    virtual const char *getFieldTypeString(int field) const override;
+    virtual const char **getFieldPropertyNames(int field) const override;
+    virtual const char *getFieldProperty(int field, const char *propertyName) const override;
+    virtual int getFieldArraySize(omnetpp::any_ptr object, int field) const override;
+    virtual void setFieldArraySize(omnetpp::any_ptr object, int field, int size) const override;
+
+    virtual const char *getFieldDynamicTypeString(omnetpp::any_ptr object, int field, int i) const override;
+    virtual std::string getFieldValueAsString(omnetpp::any_ptr object, int field, int i) const override;
+    virtual void setFieldValueAsString(omnetpp::any_ptr object, int field, int i, const char *value) const override;
+    virtual omnetpp::cValue getFieldValue(omnetpp::any_ptr object, int field, int i) const override;
+    virtual void setFieldValue(omnetpp::any_ptr object, int field, int i, const omnetpp::cValue& value) const override;
+
+    virtual const char *getFieldStructName(int field) const override;
+    virtual omnetpp::any_ptr getFieldStructValuePointer(omnetpp::any_ptr object, int field, int i) const override;
+    virtual void setFieldStructValuePointer(omnetpp::any_ptr object, int field, int i, omnetpp::any_ptr ptr) const override;
+};
+
+Register_ClassDescriptor(RxRateTimerDescriptor)
+
+RxRateTimerDescriptor::RxRateTimerDescriptor() : omnetpp::cClassDescriptor(omnetpp::opp_typename(typeid(RxRateTimer)), "omnetpp::cMessage")
+{
+    propertyNames = nullptr;
+}
+
+RxRateTimerDescriptor::~RxRateTimerDescriptor()
+{
+    delete[] propertyNames;
+}
+
+bool RxRateTimerDescriptor::doesSupport(omnetpp::cObject *obj) const
+{
+    return dynamic_cast<RxRateTimer *>(obj)!=nullptr;
+}
+
+const char **RxRateTimerDescriptor::getPropertyNames() const
+{
+    if (!propertyNames) {
+        static const char *names[] = {  nullptr };
+        omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+        const char **baseNames = base ? base->getPropertyNames() : nullptr;
+        propertyNames = mergeLists(baseNames, names);
+    }
+    return propertyNames;
+}
+
+const char *RxRateTimerDescriptor::getProperty(const char *propertyName) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    return base ? base->getProperty(propertyName) : nullptr;
+}
+
+int RxRateTimerDescriptor::getFieldCount() const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    return base ? 1+base->getFieldCount() : 1;
+}
+
+unsigned int RxRateTimerDescriptor::getFieldTypeFlags(int field) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldTypeFlags(field);
+        field -= base->getFieldCount();
+    }
+    static unsigned int fieldTypeFlags[] = {
+        FD_ISEDITABLE,    // FIELD_msgTimer
+    };
+    return (field >= 0 && field < 1) ? fieldTypeFlags[field] : 0;
+}
+
+const char *RxRateTimerDescriptor::getFieldName(int field) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldName(field);
+        field -= base->getFieldCount();
+    }
+    static const char *fieldNames[] = {
+        "msgTimer",
+    };
+    return (field >= 0 && field < 1) ? fieldNames[field] : nullptr;
+}
+
+int RxRateTimerDescriptor::findField(const char *fieldName) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    int baseIndex = base ? base->getFieldCount() : 0;
+    if (strcmp(fieldName, "msgTimer") == 0) return baseIndex + 0;
+    return base ? base->findField(fieldName) : -1;
+}
+
+const char *RxRateTimerDescriptor::getFieldTypeString(int field) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldTypeString(field);
+        field -= base->getFieldCount();
+    }
+    static const char *fieldTypeStrings[] = {
+        "float",    // FIELD_msgTimer
+    };
+    return (field >= 0 && field < 1) ? fieldTypeStrings[field] : nullptr;
+}
+
+const char **RxRateTimerDescriptor::getFieldPropertyNames(int field) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldPropertyNames(field);
+        field -= base->getFieldCount();
+    }
+    switch (field) {
+        default: return nullptr;
+    }
+}
+
+const char *RxRateTimerDescriptor::getFieldProperty(int field, const char *propertyName) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldProperty(field, propertyName);
+        field -= base->getFieldCount();
+    }
+    switch (field) {
+        default: return nullptr;
+    }
+}
+
+int RxRateTimerDescriptor::getFieldArraySize(omnetpp::any_ptr object, int field) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldArraySize(object, field);
+        field -= base->getFieldCount();
+    }
+    RxRateTimer *pp = omnetpp::fromAnyPtr<RxRateTimer>(object); (void)pp;
+    switch (field) {
+        default: return 0;
+    }
+}
+
+void RxRateTimerDescriptor::setFieldArraySize(omnetpp::any_ptr object, int field, int size) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount()){
+            base->setFieldArraySize(object, field, size);
+            return;
+        }
+        field -= base->getFieldCount();
+    }
+    RxRateTimer *pp = omnetpp::fromAnyPtr<RxRateTimer>(object); (void)pp;
+    switch (field) {
+        default: throw omnetpp::cRuntimeError("Cannot set array size of field %d of class 'RxRateTimer'", field);
+    }
+}
+
+const char *RxRateTimerDescriptor::getFieldDynamicTypeString(omnetpp::any_ptr object, int field, int i) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldDynamicTypeString(object,field,i);
+        field -= base->getFieldCount();
+    }
+    RxRateTimer *pp = omnetpp::fromAnyPtr<RxRateTimer>(object); (void)pp;
+    switch (field) {
+        default: return nullptr;
+    }
+}
+
+std::string RxRateTimerDescriptor::getFieldValueAsString(omnetpp::any_ptr object, int field, int i) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldValueAsString(object,field,i);
+        field -= base->getFieldCount();
+    }
+    RxRateTimer *pp = omnetpp::fromAnyPtr<RxRateTimer>(object); (void)pp;
+    switch (field) {
+        case FIELD_msgTimer: return double2string(pp->getMsgTimer());
+        default: return "";
+    }
+}
+
+void RxRateTimerDescriptor::setFieldValueAsString(omnetpp::any_ptr object, int field, int i, const char *value) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount()){
+            base->setFieldValueAsString(object, field, i, value);
+            return;
+        }
+        field -= base->getFieldCount();
+    }
+    RxRateTimer *pp = omnetpp::fromAnyPtr<RxRateTimer>(object); (void)pp;
+    switch (field) {
+        case FIELD_msgTimer: pp->setMsgTimer(string2double(value)); break;
+        default: throw omnetpp::cRuntimeError("Cannot set field %d of class 'RxRateTimer'", field);
+    }
+}
+
+omnetpp::cValue RxRateTimerDescriptor::getFieldValue(omnetpp::any_ptr object, int field, int i) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldValue(object,field,i);
+        field -= base->getFieldCount();
+    }
+    RxRateTimer *pp = omnetpp::fromAnyPtr<RxRateTimer>(object); (void)pp;
+    switch (field) {
+        case FIELD_msgTimer: return (double)(pp->getMsgTimer());
+        default: throw omnetpp::cRuntimeError("Cannot return field %d of class 'RxRateTimer' as cValue -- field index out of range?", field);
+    }
+}
+
+void RxRateTimerDescriptor::setFieldValue(omnetpp::any_ptr object, int field, int i, const omnetpp::cValue& value) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount()){
+            base->setFieldValue(object, field, i, value);
+            return;
+        }
+        field -= base->getFieldCount();
+    }
+    RxRateTimer *pp = omnetpp::fromAnyPtr<RxRateTimer>(object); (void)pp;
+    switch (field) {
+        case FIELD_msgTimer: pp->setMsgTimer(static_cast<float>(value.doubleValue())); break;
+        default: throw omnetpp::cRuntimeError("Cannot set field %d of class 'RxRateTimer'", field);
+    }
+}
+
+const char *RxRateTimerDescriptor::getFieldStructName(int field) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldStructName(field);
+        field -= base->getFieldCount();
+    }
+    switch (field) {
+        default: return nullptr;
+    };
+}
+
+omnetpp::any_ptr RxRateTimerDescriptor::getFieldStructValuePointer(omnetpp::any_ptr object, int field, int i) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldStructValuePointer(object, field, i);
+        field -= base->getFieldCount();
+    }
+    RxRateTimer *pp = omnetpp::fromAnyPtr<RxRateTimer>(object); (void)pp;
+    switch (field) {
+        default: return omnetpp::any_ptr(nullptr);
+    }
+}
+
+void RxRateTimerDescriptor::setFieldStructValuePointer(omnetpp::any_ptr object, int field, int i, omnetpp::any_ptr ptr) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount()){
+            base->setFieldStructValuePointer(object, field, i, ptr);
+            return;
+        }
+        field -= base->getFieldCount();
+    }
+    RxRateTimer *pp = omnetpp::fromAnyPtr<RxRateTimer>(object); (void)pp;
+    switch (field) {
+        default: throw omnetpp::cRuntimeError("Cannot set field %d of class 'RxRateTimer'", field);
+    }
+}
+
+Register_Class(RateChangeTimer)
+
+RateChangeTimer::RateChangeTimer(const char *name, short kind) : ::omnetpp::cMessage(name, kind)
+{
+}
+
+RateChangeTimer::RateChangeTimer(const RateChangeTimer& other) : ::omnetpp::cMessage(other)
+{
+    copy(other);
+}
+
+RateChangeTimer::~RateChangeTimer()
+{
+}
+
+RateChangeTimer& RateChangeTimer::operator=(const RateChangeTimer& other)
+{
+    if (this == &other) return *this;
+    ::omnetpp::cMessage::operator=(other);
+    copy(other);
+    return *this;
+}
+
+void RateChangeTimer::copy(const RateChangeTimer& other)
+{
+    this->msgTimer = other.msgTimer;
+}
+
+void RateChangeTimer::parsimPack(omnetpp::cCommBuffer *b) const
+{
+    ::omnetpp::cMessage::parsimPack(b);
+    doParsimPacking(b,this->msgTimer);
+}
+
+void RateChangeTimer::parsimUnpack(omnetpp::cCommBuffer *b)
+{
+    ::omnetpp::cMessage::parsimUnpack(b);
+    doParsimUnpacking(b,this->msgTimer);
+}
+
+float RateChangeTimer::getMsgTimer() const
+{
+    return this->msgTimer;
+}
+
+void RateChangeTimer::setMsgTimer(float msgTimer)
+{
+    this->msgTimer = msgTimer;
+}
+
+class RateChangeTimerDescriptor : public omnetpp::cClassDescriptor
+{
+  private:
+    mutable const char **propertyNames;
+    enum FieldConstants {
+        FIELD_msgTimer,
+    };
+  public:
+    RateChangeTimerDescriptor();
+    virtual ~RateChangeTimerDescriptor();
+
+    virtual bool doesSupport(omnetpp::cObject *obj) const override;
+    virtual const char **getPropertyNames() const override;
+    virtual const char *getProperty(const char *propertyName) const override;
+    virtual int getFieldCount() const override;
+    virtual const char *getFieldName(int field) const override;
+    virtual int findField(const char *fieldName) const override;
+    virtual unsigned int getFieldTypeFlags(int field) const override;
+    virtual const char *getFieldTypeString(int field) const override;
+    virtual const char **getFieldPropertyNames(int field) const override;
+    virtual const char *getFieldProperty(int field, const char *propertyName) const override;
+    virtual int getFieldArraySize(omnetpp::any_ptr object, int field) const override;
+    virtual void setFieldArraySize(omnetpp::any_ptr object, int field, int size) const override;
+
+    virtual const char *getFieldDynamicTypeString(omnetpp::any_ptr object, int field, int i) const override;
+    virtual std::string getFieldValueAsString(omnetpp::any_ptr object, int field, int i) const override;
+    virtual void setFieldValueAsString(omnetpp::any_ptr object, int field, int i, const char *value) const override;
+    virtual omnetpp::cValue getFieldValue(omnetpp::any_ptr object, int field, int i) const override;
+    virtual void setFieldValue(omnetpp::any_ptr object, int field, int i, const omnetpp::cValue& value) const override;
+
+    virtual const char *getFieldStructName(int field) const override;
+    virtual omnetpp::any_ptr getFieldStructValuePointer(omnetpp::any_ptr object, int field, int i) const override;
+    virtual void setFieldStructValuePointer(omnetpp::any_ptr object, int field, int i, omnetpp::any_ptr ptr) const override;
+};
+
+Register_ClassDescriptor(RateChangeTimerDescriptor)
+
+RateChangeTimerDescriptor::RateChangeTimerDescriptor() : omnetpp::cClassDescriptor(omnetpp::opp_typename(typeid(RateChangeTimer)), "omnetpp::cMessage")
+{
+    propertyNames = nullptr;
+}
+
+RateChangeTimerDescriptor::~RateChangeTimerDescriptor()
+{
+    delete[] propertyNames;
+}
+
+bool RateChangeTimerDescriptor::doesSupport(omnetpp::cObject *obj) const
+{
+    return dynamic_cast<RateChangeTimer *>(obj)!=nullptr;
+}
+
+const char **RateChangeTimerDescriptor::getPropertyNames() const
+{
+    if (!propertyNames) {
+        static const char *names[] = {  nullptr };
+        omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+        const char **baseNames = base ? base->getPropertyNames() : nullptr;
+        propertyNames = mergeLists(baseNames, names);
+    }
+    return propertyNames;
+}
+
+const char *RateChangeTimerDescriptor::getProperty(const char *propertyName) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    return base ? base->getProperty(propertyName) : nullptr;
+}
+
+int RateChangeTimerDescriptor::getFieldCount() const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    return base ? 1+base->getFieldCount() : 1;
+}
+
+unsigned int RateChangeTimerDescriptor::getFieldTypeFlags(int field) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldTypeFlags(field);
+        field -= base->getFieldCount();
+    }
+    static unsigned int fieldTypeFlags[] = {
+        FD_ISEDITABLE,    // FIELD_msgTimer
+    };
+    return (field >= 0 && field < 1) ? fieldTypeFlags[field] : 0;
+}
+
+const char *RateChangeTimerDescriptor::getFieldName(int field) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldName(field);
+        field -= base->getFieldCount();
+    }
+    static const char *fieldNames[] = {
+        "msgTimer",
+    };
+    return (field >= 0 && field < 1) ? fieldNames[field] : nullptr;
+}
+
+int RateChangeTimerDescriptor::findField(const char *fieldName) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    int baseIndex = base ? base->getFieldCount() : 0;
+    if (strcmp(fieldName, "msgTimer") == 0) return baseIndex + 0;
+    return base ? base->findField(fieldName) : -1;
+}
+
+const char *RateChangeTimerDescriptor::getFieldTypeString(int field) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldTypeString(field);
+        field -= base->getFieldCount();
+    }
+    static const char *fieldTypeStrings[] = {
+        "float",    // FIELD_msgTimer
+    };
+    return (field >= 0 && field < 1) ? fieldTypeStrings[field] : nullptr;
+}
+
+const char **RateChangeTimerDescriptor::getFieldPropertyNames(int field) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldPropertyNames(field);
+        field -= base->getFieldCount();
+    }
+    switch (field) {
+        default: return nullptr;
+    }
+}
+
+const char *RateChangeTimerDescriptor::getFieldProperty(int field, const char *propertyName) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldProperty(field, propertyName);
+        field -= base->getFieldCount();
+    }
+    switch (field) {
+        default: return nullptr;
+    }
+}
+
+int RateChangeTimerDescriptor::getFieldArraySize(omnetpp::any_ptr object, int field) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldArraySize(object, field);
+        field -= base->getFieldCount();
+    }
+    RateChangeTimer *pp = omnetpp::fromAnyPtr<RateChangeTimer>(object); (void)pp;
+    switch (field) {
+        default: return 0;
+    }
+}
+
+void RateChangeTimerDescriptor::setFieldArraySize(omnetpp::any_ptr object, int field, int size) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount()){
+            base->setFieldArraySize(object, field, size);
+            return;
+        }
+        field -= base->getFieldCount();
+    }
+    RateChangeTimer *pp = omnetpp::fromAnyPtr<RateChangeTimer>(object); (void)pp;
+    switch (field) {
+        default: throw omnetpp::cRuntimeError("Cannot set array size of field %d of class 'RateChangeTimer'", field);
+    }
+}
+
+const char *RateChangeTimerDescriptor::getFieldDynamicTypeString(omnetpp::any_ptr object, int field, int i) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldDynamicTypeString(object,field,i);
+        field -= base->getFieldCount();
+    }
+    RateChangeTimer *pp = omnetpp::fromAnyPtr<RateChangeTimer>(object); (void)pp;
+    switch (field) {
+        default: return nullptr;
+    }
+}
+
+std::string RateChangeTimerDescriptor::getFieldValueAsString(omnetpp::any_ptr object, int field, int i) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldValueAsString(object,field,i);
+        field -= base->getFieldCount();
+    }
+    RateChangeTimer *pp = omnetpp::fromAnyPtr<RateChangeTimer>(object); (void)pp;
+    switch (field) {
+        case FIELD_msgTimer: return double2string(pp->getMsgTimer());
+        default: return "";
+    }
+}
+
+void RateChangeTimerDescriptor::setFieldValueAsString(omnetpp::any_ptr object, int field, int i, const char *value) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount()){
+            base->setFieldValueAsString(object, field, i, value);
+            return;
+        }
+        field -= base->getFieldCount();
+    }
+    RateChangeTimer *pp = omnetpp::fromAnyPtr<RateChangeTimer>(object); (void)pp;
+    switch (field) {
+        case FIELD_msgTimer: pp->setMsgTimer(string2double(value)); break;
+        default: throw omnetpp::cRuntimeError("Cannot set field %d of class 'RateChangeTimer'", field);
+    }
+}
+
+omnetpp::cValue RateChangeTimerDescriptor::getFieldValue(omnetpp::any_ptr object, int field, int i) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldValue(object,field,i);
+        field -= base->getFieldCount();
+    }
+    RateChangeTimer *pp = omnetpp::fromAnyPtr<RateChangeTimer>(object); (void)pp;
+    switch (field) {
+        case FIELD_msgTimer: return (double)(pp->getMsgTimer());
+        default: throw omnetpp::cRuntimeError("Cannot return field %d of class 'RateChangeTimer' as cValue -- field index out of range?", field);
+    }
+}
+
+void RateChangeTimerDescriptor::setFieldValue(omnetpp::any_ptr object, int field, int i, const omnetpp::cValue& value) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount()){
+            base->setFieldValue(object, field, i, value);
+            return;
+        }
+        field -= base->getFieldCount();
+    }
+    RateChangeTimer *pp = omnetpp::fromAnyPtr<RateChangeTimer>(object); (void)pp;
+    switch (field) {
+        case FIELD_msgTimer: pp->setMsgTimer(static_cast<float>(value.doubleValue())); break;
+        default: throw omnetpp::cRuntimeError("Cannot set field %d of class 'RateChangeTimer'", field);
+    }
+}
+
+const char *RateChangeTimerDescriptor::getFieldStructName(int field) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldStructName(field);
+        field -= base->getFieldCount();
+    }
+    switch (field) {
+        default: return nullptr;
+    };
+}
+
+omnetpp::any_ptr RateChangeTimerDescriptor::getFieldStructValuePointer(omnetpp::any_ptr object, int field, int i) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount())
+            return base->getFieldStructValuePointer(object, field, i);
+        field -= base->getFieldCount();
+    }
+    RateChangeTimer *pp = omnetpp::fromAnyPtr<RateChangeTimer>(object); (void)pp;
+    switch (field) {
+        default: return omnetpp::any_ptr(nullptr);
+    }
+}
+
+void RateChangeTimerDescriptor::setFieldStructValuePointer(omnetpp::any_ptr object, int field, int i, omnetpp::any_ptr ptr) const
+{
+    omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
+    if (base) {
+        if (field < base->getFieldCount()){
+            base->setFieldStructValuePointer(object, field, i, ptr);
+            return;
+        }
+        field -= base->getFieldCount();
+    }
+    RateChangeTimer *pp = omnetpp::fromAnyPtr<RateChangeTimer>(object); (void)pp;
+    switch (field) {
+        default: throw omnetpp::cRuntimeError("Cannot set field %d of class 'RateChangeTimer'", field);
     }
 }
 

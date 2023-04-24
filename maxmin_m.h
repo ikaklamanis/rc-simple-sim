@@ -19,16 +19,14 @@
 class RCMessage;
 class MaxMinMsg;
 class MaxMinACK;
-class ProbeMsg;
-class ProbeACK;
 class RCSelfMessage;
 class SelfTimer;
 class InMsgTimer;
 class OutMsgTimer;
 class AckTimeOut;
-class ProbeSelfTimer;
-class ProbeAckTimeOut;
 class AIMDTimer;
+class RxRateTimer;
+class RateChangeTimer;
 /**
  * Class generated from <tt>maxmin.msg:12</tt> by opp_msgtool.
  * <pre>
@@ -115,6 +113,8 @@ inline void doParsimUnpacking(omnetpp::cCommBuffer *b, MaxMinMsg& obj) {obj.pars
  *     int source;
  *     int destination;
  * }
+ * 
+ * // only used as self messages
  * </pre>
  */
 class MaxMinACK : public ::omnetpp::cMessage
@@ -153,76 +153,7 @@ inline void doParsimPacking(omnetpp::cCommBuffer *b, const MaxMinACK& obj) {obj.
 inline void doParsimUnpacking(omnetpp::cCommBuffer *b, MaxMinACK& obj) {obj.parsimUnpack(b);}
 
 /**
- * Class generated from <tt>maxmin.msg:29</tt> by opp_msgtool.
- * <pre>
- * message ProbeMsg extends RCMessage
- * {
- * }
- * </pre>
- */
-class ProbeMsg : public ::RCMessage
-{
-  protected:
-
-  private:
-    void copy(const ProbeMsg& other);
-
-  protected:
-    bool operator==(const ProbeMsg&) = delete;
-
-  public:
-    ProbeMsg(const char *name=nullptr, short kind=0);
-    ProbeMsg(const ProbeMsg& other);
-    virtual ~ProbeMsg();
-    ProbeMsg& operator=(const ProbeMsg& other);
-    virtual ProbeMsg *dup() const override {return new ProbeMsg(*this);}
-    virtual void parsimPack(omnetpp::cCommBuffer *b) const override;
-    virtual void parsimUnpack(omnetpp::cCommBuffer *b) override;
-};
-
-inline void doParsimPacking(omnetpp::cCommBuffer *b, const ProbeMsg& obj) {obj.parsimPack(b);}
-inline void doParsimUnpacking(omnetpp::cCommBuffer *b, ProbeMsg& obj) {obj.parsimUnpack(b);}
-
-/**
  * Class generated from <tt>maxmin.msg:32</tt> by opp_msgtool.
- * <pre>
- * message ProbeACK
- * {
- *     long msgId;
- * }
- * 
- * // only used as self messages
- * </pre>
- */
-class ProbeACK : public ::omnetpp::cMessage
-{
-  protected:
-    long msgId = 0;
-
-  private:
-    void copy(const ProbeACK& other);
-
-  protected:
-    bool operator==(const ProbeACK&) = delete;
-
-  public:
-    ProbeACK(const char *name=nullptr, short kind=0);
-    ProbeACK(const ProbeACK& other);
-    virtual ~ProbeACK();
-    ProbeACK& operator=(const ProbeACK& other);
-    virtual ProbeACK *dup() const override {return new ProbeACK(*this);}
-    virtual void parsimPack(omnetpp::cCommBuffer *b) const override;
-    virtual void parsimUnpack(omnetpp::cCommBuffer *b) override;
-
-    virtual long getMsgId() const;
-    virtual void setMsgId(long msgId);
-};
-
-inline void doParsimPacking(omnetpp::cCommBuffer *b, const ProbeACK& obj) {obj.parsimPack(b);}
-inline void doParsimUnpacking(omnetpp::cCommBuffer *b, ProbeACK& obj) {obj.parsimUnpack(b);}
-
-/**
- * Class generated from <tt>maxmin.msg:39</tt> by opp_msgtool.
  * <pre>
  * message RCSelfMessage
  * {
@@ -258,7 +189,7 @@ inline void doParsimPacking(omnetpp::cCommBuffer *b, const RCSelfMessage& obj) {
 inline void doParsimUnpacking(omnetpp::cCommBuffer *b, RCSelfMessage& obj) {obj.parsimUnpack(b);}
 
 /**
- * Class generated from <tt>maxmin.msg:44</tt> by opp_msgtool.
+ * Class generated from <tt>maxmin.msg:37</tt> by opp_msgtool.
  * <pre>
  * message SelfTimer
  * {
@@ -294,7 +225,7 @@ inline void doParsimPacking(omnetpp::cCommBuffer *b, const SelfTimer& obj) {obj.
 inline void doParsimUnpacking(omnetpp::cCommBuffer *b, SelfTimer& obj) {obj.parsimUnpack(b);}
 
 /**
- * Class generated from <tt>maxmin.msg:49</tt> by opp_msgtool.
+ * Class generated from <tt>maxmin.msg:42</tt> by opp_msgtool.
  * <pre>
  * message InMsgTimer
  * {
@@ -335,7 +266,7 @@ inline void doParsimPacking(omnetpp::cCommBuffer *b, const InMsgTimer& obj) {obj
 inline void doParsimUnpacking(omnetpp::cCommBuffer *b, InMsgTimer& obj) {obj.parsimUnpack(b);}
 
 /**
- * Class generated from <tt>maxmin.msg:55</tt> by opp_msgtool.
+ * Class generated from <tt>maxmin.msg:48</tt> by opp_msgtool.
  * <pre>
  * message OutMsgTimer
  * {
@@ -381,7 +312,7 @@ inline void doParsimPacking(omnetpp::cCommBuffer *b, const OutMsgTimer& obj) {ob
 inline void doParsimUnpacking(omnetpp::cCommBuffer *b, OutMsgTimer& obj) {obj.parsimUnpack(b);}
 
 /**
- * Class generated from <tt>maxmin.msg:62</tt> by opp_msgtool.
+ * Class generated from <tt>maxmin.msg:55</tt> by opp_msgtool.
  * <pre>
  * message AckTimeOut
  * {
@@ -417,84 +348,7 @@ inline void doParsimPacking(omnetpp::cCommBuffer *b, const AckTimeOut& obj) {obj
 inline void doParsimUnpacking(omnetpp::cCommBuffer *b, AckTimeOut& obj) {obj.parsimUnpack(b);}
 
 /**
- * Class generated from <tt>maxmin.msg:67</tt> by opp_msgtool.
- * <pre>
- * message ProbeSelfTimer
- * {
- *     float msgTimer;
- *     long msgId;
- * }
- * </pre>
- */
-class ProbeSelfTimer : public ::omnetpp::cMessage
-{
-  protected:
-    float msgTimer = 0;
-    long msgId = 0;
-
-  private:
-    void copy(const ProbeSelfTimer& other);
-
-  protected:
-    bool operator==(const ProbeSelfTimer&) = delete;
-
-  public:
-    ProbeSelfTimer(const char *name=nullptr, short kind=0);
-    ProbeSelfTimer(const ProbeSelfTimer& other);
-    virtual ~ProbeSelfTimer();
-    ProbeSelfTimer& operator=(const ProbeSelfTimer& other);
-    virtual ProbeSelfTimer *dup() const override {return new ProbeSelfTimer(*this);}
-    virtual void parsimPack(omnetpp::cCommBuffer *b) const override;
-    virtual void parsimUnpack(omnetpp::cCommBuffer *b) override;
-
-    virtual float getMsgTimer() const;
-    virtual void setMsgTimer(float msgTimer);
-
-    virtual long getMsgId() const;
-    virtual void setMsgId(long msgId);
-};
-
-inline void doParsimPacking(omnetpp::cCommBuffer *b, const ProbeSelfTimer& obj) {obj.parsimPack(b);}
-inline void doParsimUnpacking(omnetpp::cCommBuffer *b, ProbeSelfTimer& obj) {obj.parsimUnpack(b);}
-
-/**
- * Class generated from <tt>maxmin.msg:73</tt> by opp_msgtool.
- * <pre>
- * message ProbeAckTimeOut
- * {
- *     long msgId;
- * }
- * </pre>
- */
-class ProbeAckTimeOut : public ::omnetpp::cMessage
-{
-  protected:
-    long msgId = 0;
-
-  private:
-    void copy(const ProbeAckTimeOut& other);
-
-  protected:
-    bool operator==(const ProbeAckTimeOut&) = delete;
-
-  public:
-    ProbeAckTimeOut(const char *name=nullptr, short kind=0);
-    ProbeAckTimeOut(const ProbeAckTimeOut& other);
-    virtual ~ProbeAckTimeOut();
-    ProbeAckTimeOut& operator=(const ProbeAckTimeOut& other);
-    virtual ProbeAckTimeOut *dup() const override {return new ProbeAckTimeOut(*this);}
-    virtual void parsimPack(omnetpp::cCommBuffer *b) const override;
-    virtual void parsimUnpack(omnetpp::cCommBuffer *b) override;
-
-    virtual long getMsgId() const;
-    virtual void setMsgId(long msgId);
-};
-
-inline void doParsimPacking(omnetpp::cCommBuffer *b, const ProbeAckTimeOut& obj) {obj.parsimPack(b);}
-inline void doParsimUnpacking(omnetpp::cCommBuffer *b, ProbeAckTimeOut& obj) {obj.parsimUnpack(b);}
-
-/**
- * Class generated from <tt>maxmin.msg:78</tt> by opp_msgtool.
+ * Class generated from <tt>maxmin.msg:60</tt> by opp_msgtool.
  * <pre>
  * message AIMDTimer
  * {
@@ -539,22 +393,92 @@ class AIMDTimer : public ::omnetpp::cMessage
 inline void doParsimPacking(omnetpp::cCommBuffer *b, const AIMDTimer& obj) {obj.parsimPack(b);}
 inline void doParsimUnpacking(omnetpp::cCommBuffer *b, AIMDTimer& obj) {obj.parsimUnpack(b);}
 
+/**
+ * Class generated from <tt>maxmin.msg:67</tt> by opp_msgtool.
+ * <pre>
+ * message RxRateTimer
+ * {
+ *     float msgTimer;
+ * }
+ * </pre>
+ */
+class RxRateTimer : public ::omnetpp::cMessage
+{
+  protected:
+    float msgTimer = 0;
+
+  private:
+    void copy(const RxRateTimer& other);
+
+  protected:
+    bool operator==(const RxRateTimer&) = delete;
+
+  public:
+    RxRateTimer(const char *name=nullptr, short kind=0);
+    RxRateTimer(const RxRateTimer& other);
+    virtual ~RxRateTimer();
+    RxRateTimer& operator=(const RxRateTimer& other);
+    virtual RxRateTimer *dup() const override {return new RxRateTimer(*this);}
+    virtual void parsimPack(omnetpp::cCommBuffer *b) const override;
+    virtual void parsimUnpack(omnetpp::cCommBuffer *b) override;
+
+    virtual float getMsgTimer() const;
+    virtual void setMsgTimer(float msgTimer);
+};
+
+inline void doParsimPacking(omnetpp::cCommBuffer *b, const RxRateTimer& obj) {obj.parsimPack(b);}
+inline void doParsimUnpacking(omnetpp::cCommBuffer *b, RxRateTimer& obj) {obj.parsimUnpack(b);}
+
+/**
+ * Class generated from <tt>maxmin.msg:72</tt> by opp_msgtool.
+ * <pre>
+ * message RateChangeTimer
+ * {
+ *     float msgTimer;
+ * }
+ * </pre>
+ */
+class RateChangeTimer : public ::omnetpp::cMessage
+{
+  protected:
+    float msgTimer = 0;
+
+  private:
+    void copy(const RateChangeTimer& other);
+
+  protected:
+    bool operator==(const RateChangeTimer&) = delete;
+
+  public:
+    RateChangeTimer(const char *name=nullptr, short kind=0);
+    RateChangeTimer(const RateChangeTimer& other);
+    virtual ~RateChangeTimer();
+    RateChangeTimer& operator=(const RateChangeTimer& other);
+    virtual RateChangeTimer *dup() const override {return new RateChangeTimer(*this);}
+    virtual void parsimPack(omnetpp::cCommBuffer *b) const override;
+    virtual void parsimUnpack(omnetpp::cCommBuffer *b) override;
+
+    virtual float getMsgTimer() const;
+    virtual void setMsgTimer(float msgTimer);
+};
+
+inline void doParsimPacking(omnetpp::cCommBuffer *b, const RateChangeTimer& obj) {obj.parsimPack(b);}
+inline void doParsimUnpacking(omnetpp::cCommBuffer *b, RateChangeTimer& obj) {obj.parsimUnpack(b);}
+
 
 namespace omnetpp {
 
 template<> inline RCMessage *fromAnyPtr(any_ptr ptr) { return check_and_cast<RCMessage*>(ptr.get<cObject>()); }
 template<> inline MaxMinMsg *fromAnyPtr(any_ptr ptr) { return check_and_cast<MaxMinMsg*>(ptr.get<cObject>()); }
 template<> inline MaxMinACK *fromAnyPtr(any_ptr ptr) { return check_and_cast<MaxMinACK*>(ptr.get<cObject>()); }
-template<> inline ProbeMsg *fromAnyPtr(any_ptr ptr) { return check_and_cast<ProbeMsg*>(ptr.get<cObject>()); }
-template<> inline ProbeACK *fromAnyPtr(any_ptr ptr) { return check_and_cast<ProbeACK*>(ptr.get<cObject>()); }
 template<> inline RCSelfMessage *fromAnyPtr(any_ptr ptr) { return check_and_cast<RCSelfMessage*>(ptr.get<cObject>()); }
 template<> inline SelfTimer *fromAnyPtr(any_ptr ptr) { return check_and_cast<SelfTimer*>(ptr.get<cObject>()); }
 template<> inline InMsgTimer *fromAnyPtr(any_ptr ptr) { return check_and_cast<InMsgTimer*>(ptr.get<cObject>()); }
 template<> inline OutMsgTimer *fromAnyPtr(any_ptr ptr) { return check_and_cast<OutMsgTimer*>(ptr.get<cObject>()); }
 template<> inline AckTimeOut *fromAnyPtr(any_ptr ptr) { return check_and_cast<AckTimeOut*>(ptr.get<cObject>()); }
-template<> inline ProbeSelfTimer *fromAnyPtr(any_ptr ptr) { return check_and_cast<ProbeSelfTimer*>(ptr.get<cObject>()); }
-template<> inline ProbeAckTimeOut *fromAnyPtr(any_ptr ptr) { return check_and_cast<ProbeAckTimeOut*>(ptr.get<cObject>()); }
 template<> inline AIMDTimer *fromAnyPtr(any_ptr ptr) { return check_and_cast<AIMDTimer*>(ptr.get<cObject>()); }
+template<> inline RxRateTimer *fromAnyPtr(any_ptr ptr) { return check_and_cast<RxRateTimer*>(ptr.get<cObject>()); }
+template<> inline RateChangeTimer *fromAnyPtr(any_ptr ptr) { return check_and_cast<RateChangeTimer*>(ptr.get<cObject>()); }
 
 }  // namespace omnetpp
 
