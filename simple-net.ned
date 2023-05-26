@@ -21,6 +21,8 @@ simple RcNode
 
 		@signal[bdInRateSignal](type="float");  
 		@signal[bdOutRateSignal](type="float");  
+		@signal[roptSignal](type="float");
+		@signal[minRxRateSignal](type="float");
 
         @signal[numRxSignal](type="int");
         @signal[rxRateSignal](type="float");      
@@ -37,6 +39,9 @@ simple RcNode
 
 		@statistic[bdInRate](title="bandwidth ingress rate"; source=bdInRateSignal; record=stats,vector; );
 		@statistic[bdOutRate](title="bandwidth egress rate"; source=bdOutRateSignal; record=stats,vector; );
+		@statistic[optRate](title="theory optimal rate"; source=roptSignal; record=stats,vector; );
+		@statistic[minRxRate](title="minimum receiving rate"; source=rxRateSignal; record=stats,vector; );
+		
 
         @statistic[numReceived](title="num msgs rx"; source=sum(numRxSignal); record=stats,vector; );
         @statistic[rxRate](title="msgs rx rate"; source=rxRateSignal; record=stats,vector; );
@@ -59,7 +64,7 @@ simple RcNode
 network MaxMinRC
 {
     parameters:
-        int numNodes = default(6);
+        int numNodes = default(4);
     
     types:
         channel Channel extends ned.DelayChannel

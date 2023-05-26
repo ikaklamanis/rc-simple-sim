@@ -14,25 +14,38 @@ float roundDown(float n, int decimals){
     return (float) ceil(n * multiplier) / (float) multiplier;
 }
 
-map<int, float> getRoundedScores(map<int, float> scores, int prec){
+map<int, float> getRoundedScores(map<int, float> scores, int prec, int gateSize, map<int, int> gateToPeer){
     float credit = 0;
     map<int, float> scoresRounded;
+
     for (auto& score : scores) {
         score.second = roundUp(score.second, prec + 2);
     }
     auto cmp = [](const pair<int, float>& a, const pair<int, float>& b) {
         return a.second > b.second;
     };
-    vector<pair<int, float>> sorted_scores(scores.begin(), scores.end());
-    sort(sorted_scores.begin(), sorted_scores.end(), cmp);
-//    double sum_scores = 0;
+
+    vector<int> gates = vector<int>(gateSize);
+    for (int i = 0; i < gateSize; i++){
+        gates[i] = i;
+    }
+    random_shuffle ( gates.begin(), gates.end() );  // in place no extra
+
+    EV << "random shuffled gates and scores:" << endl;
+    for (std::vector<int>::iterator it=gates.begin(); it!=gates.end(); ++it){
+       EV << ' ' << *it << " : " << scores[gateToPeer[*it]] << endl;
+    }
+    EV << endl;
+
+//    vector<pair<int, float>> sorted_scores(scores.begin(), scores.end());
+//    sort(sorted_scores.begin(), sorted_scores.end(), cmp);
+
+    for (int i = 0; i < gateSize; i++){
 //    for (const auto& score : sorted_scores) {
-//        sum_scores += score.second;
-//    }
-//    EV << "sum sorted_scores = " << sum_scores << endl;
-    for (const auto& score : sorted_scores) {
-        int nodeIdx = score.first;
-        float s = score.second;
+//        int nodeIdx = score.first;
+//        float s = score.second;
+        int nodeIdx = gateToPeer[gates[i]];
+        float s = scores[nodeIdx];
         float diff_ceil = roundUp(s, prec) - s;
         float diff_floor = s - roundDown(s, prec);
         if (diff_ceil == 0) {
@@ -72,12 +85,14 @@ int findClosestEmptySlot(map<int, int> leaderSchedule, int idx) {
 
 // TODO: currently assuming that follower nodes are nodes 1,2,3,... Make more modular
 
-map<int, int> getLeaderSchedule(int numNodes, int numMsgs, map<int, float> uScoresNorm, int prec, float epsilon) {
+map<int, int> getLeaderSchedule(int numNodes, int numMsgs, map<int, float> uScoresNorm, int prec, float epsilon,
+        int gateSize, map<int, int> gateToPeer) {
+
     map<int, float> uScoresRounded;
     map<int, int> nodeToNumMsgs, leaderSchedule;
     map<int, vector<float>> nodeToLocs;
 
-    uScoresRounded = getRoundedScores(uScoresNorm, prec);
+    uScoresRounded = getRoundedScores(uScoresNorm, prec, gateSize, gateToPeer);
     EV << "uScoresRounded" << endl;
     for(int i=1; i<numNodes; i++) {
         EV << i << " : " << uScoresRounded[i] << endl;
@@ -98,13 +113,26 @@ map<int, int> getLeaderSchedule(int numNodes, int numMsgs, map<int, float> uScor
         leaderSchedule[msgId] = -1;
     }
 
-    vector<pair<int, float>> sorted_uScoresNorm(uScoresRounded.begin(), uScoresRounded.end());
-    sort(sorted_uScoresNorm.begin(), sorted_uScoresNorm.end(), [](auto const& lhs, auto const& rhs) {
-        return lhs.second < rhs.second;
-    });
+    vector<int> gates = vector<int>(gateSize);
+    for (int i = 0; i < gateSize; i++){
+        gates[i] = i;
+    }
+    random_shuffle ( gates.begin(), gates.end() );  // in place no extra
 
-    for (int i = 0; i < sorted_uScoresNorm.size() - 1; i++) {
-        int nodeIdx = sorted_uScoresNorm[i].first;
+//    vector<pair<int, float>> sorted_uScoresNorm(uScoresRounded.begin(), uScoresRounded.end());
+//    sort(sorted_uScoresNorm.begin(), sorted_uScoresNorm.end(), [](auto const& lhs, auto const& rhs) {
+//        return lhs.second < rhs.second;
+//    });
+
+    EV << "random shuffled uScoresNorm:" << endl;
+    for (int i = 0; i < gateSize; i++){
+       EV << "" << gateToPeer[gates[i]] << " : " << uScoresRounded[gateToPeer[gates[i]]] << endl;
+    }
+    EV << endl;
+
+    for (int i = 0; i < uScoresRounded.size() - 1; i++) {
+        int nodeIdx = gateToPeer[gates[i]];
+//        int nodeIdx = sorted_uScoresNorm[i].first;
         vector<float> locs = nodeToLocs[nodeIdx];
         for (int j = 0; j < locs.size(); j++) {
             int loc = findClosestEmptySlot(leaderSchedule, round(locs[j]));
@@ -114,7 +142,8 @@ map<int, int> getLeaderSchedule(int numNodes, int numMsgs, map<int, float> uScor
         }
     }
 
-    int lastNodeIdx = sorted_uScoresNorm.back().first;
+//    int lastNodeIdx = sorted_uScoresNorm.back().first;
+    int lastNodeIdx = gateToPeer[gates.back()];
     for (int msgId = 0; msgId < numMsgs; msgId++) {
         if (leaderSchedule[msgId] == -1) {
             leaderSchedule[msgId] = lastNodeIdx;
@@ -154,31 +183,5 @@ map<int, int> getLeaderSchedule(int numNodes, int numMsgs, map<int, float> uScor
     return leaderSchedule;
 
 }
-
-
-//int main() {
-//    int numNodes = 4;
-//    int numMsgs = 100;
-//
-//    int prec = 3;
-//    float epsilon = 0.02;
-//
-//    for (int i = 1; i < 20; i++) {
-//        for (int j = 1; j < 50; j++) {
-//            for (int k = 1; k < 50; k++) {
-//                map<int, float> uScores = {{1, i}, {2, j}, {3, k}};
-//                    EV << "uScores" << endl;
-//                    for(int i=1; i<numNodes; i++) {
-//                        EV << i << " : " << uScores[i] << endl;
-//                    }
-//                    EV << endl;
-//                map<int, int> leaderSchedule = getLeaderSchedule(numNodes, numMsgs, uScores, prec, epsilon);
-//                // do something with leaderSchedule
-//            }
-//        }
-//    }
-//
-//    return 0;
-//}
 
 

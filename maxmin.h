@@ -29,6 +29,9 @@ class RcNode : public cSimpleModule {
     private:
         simsignal_t bdInRateSignal;
         simsignal_t bdOutRateSignal;
+        simsignal_t roptSignal;
+        simsignal_t minRxRateSignal;
+
         simsignal_t numRxSignal;
         simsignal_t rxRateSignal;
         simsignal_t numRxAsIntermSignal;
@@ -50,6 +53,7 @@ class RcNode : public cSimpleModule {
 
         float bdInRate;
         float bdOutRate;
+        float ropt;
 
         int GateSize;
 //        int numNodes;
@@ -122,10 +126,14 @@ class RcNode : public cSimpleModule {
         virtual pair<int,int> getMinRxNode();
         virtual void updateLeaderSchedule();
 
+        virtual void updateUScores(); // bringing back this method from main branch
+
         // only for followers?
         virtual void handleAIMDTimer(AIMDTimer *aimdtmsg);
 
         virtual void applyAIMDUpdate(int peerIdx, int updateType);
+
+        virtual float getOptRate();
 
 
 

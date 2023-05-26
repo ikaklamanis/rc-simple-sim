@@ -12,17 +12,23 @@ using namespace omnetpp;
 using namespace std;
 
 
-const int numNodes = 6; // int numNodes = access array size
+const int numNodes = 4; // int numNodes = access array size
 // the first node (index 0) is the leader
-const float ingress[numNodes] = {100, 1000, 1000, 1000, 1000, 1000};
-const float egress[numNodes] =  {1000, 1400, 1000, 800, 600, 200};
+//const float ingress[numNodes] = {100, 1000, 1000, 1000};
+//const float egress[numNodes] =  {1000, 670, 670, 670};
+//
+//const float ingress[numNodes] = {100, 1600, 1000, 400};
+//const float egress[numNodes] =  {1600, 800, 400, 400};
+
+const float ingress[numNodes] = {1000, 1000, 1000, 1000};
+const float egress[numNodes] =  {1000, 1200, 600, 200};
 
 // For reference: propagation delay is 10ms = 0.01s
 struct Config {
     const int LEADER_IDX = 0;
 
     const int MaxMinMsgSize = 1;
-    const int TotalMsgsToCheck = 4000; // set to 400 --> history of 4s
+    const int TotalMsgsToCheck = 1000;
     const float InitUtilScore = 1;
 
     const float UtilAddVal = 1; // TODO: make it inverse-proportional to current utility value
@@ -41,9 +47,9 @@ struct Config {
 };
 
 struct AIMDConfig {
-    const float AddVal = 0.001;
+    const float AddVal = 0.01;
     const float MultFactor = 0.5;
-    const float InitVal = 1;
+    const float InitVal = 0.5;
     const float MinVal = 0.1;
     const float MaxVal = 1;
 
